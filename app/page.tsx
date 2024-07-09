@@ -1,113 +1,342 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import { FaFire } from "react-icons/fa";
+import { FiPlus, FiTrash } from "react-icons/fi";
+import { motion } from "framer-motion"
+
+interface Card {
+  title: string; 
+  id: string; 
+  column: string
+}
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
+    <main className="h-screen w-full bg-neutral-900 text-neutral-50">
+      <Board/>
     </main>
   );
+}
+
+const DEFAULT_CARDS = [
+  // BACKLOG
+  { title: "Look into render bug in dashboard", id: "1", column: "backlog" },
+  { title: "SOX compliance checklist", id: "2", column: "backlog" },
+  { title: "[SPIKE] Migrate to Azure", id: "3", column: "backlog" },
+  { title: "Document Notifications service", id: "4", column: "backlog" },
+  // TODO
+  {
+    title: "Research DB options for new microservice",
+    id: "5",
+    column: "todo",
+  },
+  { title: "Postmortem for outage", id: "6", column: "todo" },
+  { title: "Sync with product on Q3 roadmap", id: "7", column: "todo" },
+
+  // DOING
+  {
+    title: "Refactor context providers to use Zustand",
+    id: "8",
+    column: "doing",
+  },
+  { title: "Add logging to daily CRON", id: "9", column: "doing" },
+  // DONE
+  {
+    title: "Set up DD dashboards for Lambda listener",
+    id: "10",
+    column: "done",
+  },
+];
+
+const Board = () => {
+  const [ cards, setCards ] = useState(DEFAULT_CARDS);
+  return (
+    <div className="flex h-full w-full gap-3 overflow-scroll p-12 custom-scrollbar">
+       <Column
+        title="Backlog"
+        column="backlog"
+        headingColor="text-neutral-500"
+        cards={cards}
+        setCards={setCards}
+      />
+      
+      <Column
+        title="TODO"
+        column="todo"
+        headingColor="text-yellow-200"
+        cards={cards}
+        setCards={setCards}
+      />
+
+      <Column
+        title="In progress"
+        column="doing"
+        headingColor="text-blue-200"
+        cards={cards}
+        setCards={setCards}
+      />
+
+      <Column
+        title="Complete"
+        column="done"
+        headingColor="text-emerald-200"
+        cards={cards}
+        setCards={setCards}
+      />
+
+      <BurnBarrel setCards={setCards}/>
+    </div>
+  )
+}
+
+const Column= ({  title, headingColor, column, cards, setCards }: { title: string, column: string, headingColor: string, cards: any[], setCards: any}) => {
+  const [active, setActive] = useState(false);
+
+  const handleDragStart = (e: any, card: Card) => {
+    e.dataTransfer.setData("cardId", card.id);
+  };
+
+  const handleDragEnd = (e: any) => {
+    const cardId = e.dataTransfer.getData("cardId");
+
+    setActive(false);
+    clearHighlights();
+
+    const indicators = getIndicators();
+    const { element } = getNearestIndicator(e, indicators);
+
+    const before = element.dataset.before || "-1";
+
+    if (before !== cardId) {
+      let copy = [...cards];
+
+      let cardToTransfer = copy.find((c) => c.id === cardId);
+      if (!cardToTransfer) return;
+      cardToTransfer = { ...cardToTransfer, column };
+
+      copy = copy.filter((c) => c.id !== cardId);
+
+      const moveToBack = before === "-1";
+
+      if (moveToBack) {
+        copy.push(cardToTransfer);
+      } else {
+        const insertAtIndex = copy.findIndex((el) => el.id === before);
+        if (insertAtIndex === undefined) return;
+
+        copy.splice(insertAtIndex, 0, cardToTransfer);
+      }
+
+      setCards(copy);
+    }
+  };
+
+  const handleDragOver = (e: any) => {
+    e.preventDefault();
+    highlightIndicator(e);
+
+    setActive(true);
+  };
+
+  const clearHighlights = (els?: any[]) => {
+    const indicators = els || getIndicators();
+
+    indicators.forEach((i) => {
+      i.style.opacity = "0";
+    });
+  };
+
+  const highlightIndicator = (e: any) => {
+    const indicators = getIndicators();
+
+    clearHighlights(indicators);
+
+    const el = getNearestIndicator(e, indicators);
+
+    el.element.style.opacity = "1";
+  };
+
+  const getNearestIndicator = (e: any, indicators: any) => {
+    const DISTANCE_OFFSET = 50;
+
+    const el = indicators.reduce(
+      (closest: any, child: any) => {
+        const box = child.getBoundingClientRect();
+
+        const offset = e.clientY - (box.top + DISTANCE_OFFSET);
+
+        if (offset < 0 && offset > closest.offset) {
+          return { offset: offset, element: child };
+        } else {
+          return closest;
+        }
+      },
+      {
+        offset: Number.NEGATIVE_INFINITY,
+        element: indicators[indicators.length - 1],
+      }
+    );
+
+    return el;
+  };
+
+  const getIndicators = () => {
+    return Array.from(document.querySelectorAll(`[data-column="${column}"]`));
+  };
+
+  const handleDragLeave = () => {
+    clearHighlights();
+    setActive(false);
+  };
+
+  const filteredCards = cards.filter((c) => c.column === column);
+
+  return (
+    <div className="w-56 shrink-0">
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className={`font-medium ${headingColor}`}>{title}</h3>
+        <span className="rounded text-sm text-neutral-400">
+          {filteredCards.length}
+        </span>
+      </div>
+      <div
+        onDrop={handleDragEnd}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        className={`h-full w-full transition-colors ${
+          active ? "bg-neutral-800/50" : "bg-neutral-800/0"
+        }`}
+      >
+        {filteredCards.map((c) => {
+          return <Card key={c.id} {...c} handleDragStart={handleDragStart} />;
+        })}
+        <DropIndicator beforeId={null} column={column} />
+        <AddCard column={column} setCards={setCards} />
+      </div>
+    </div>
+  );
+} 
+
+const Card = ({ title, id, column, handleDragStart }: { title: string, id: string, column: string, handleDragStart: any}) => {
+  return (
+    <>
+      <DropIndicator beforeId={id} column={column}/>
+      <motion.div
+       layout
+       layoutId={id}
+       draggable="true"
+       onDragStart={(e) => handleDragStart(e, { title, id, column })}
+       className="cursor-grab rounded border border-neutral-700 bg-neutral-800 p-3 active:cursor-grabbing focus:cursor-grabbing">
+        <p className="text-sm text-neutral-100">{title}</p>
+      </motion.div>
+    </>
+  )
+}
+
+const DropIndicator = ({ beforeId, column }: { beforeId: string | null, column: string} ) => {
+  return (
+    <div
+     data-before={beforeId || "-1"}
+     data-column={column} 
+     className="my-0.5 h-0.5 w-full bg-violet-400 opacity-0">
+    </div>
+  )
+}
+
+const BurnBarrel = ({ setCards }: { setCards: any }) => {
+  const [ active, setActive] = useState(false);
+
+  const handleDragOver = (e: any) => {
+    e.preventDefault();
+    setActive(true);
+  }
+
+  const handleDragLeave = () => {
+    setActive(false);
+  }
+
+  const handleDragEnd = (e: any) => {
+    const cardId = e.dataTransfer.getData("cardId");
+
+    setCards((pv: Card[]) => pv.filter((card) => card.id !== cardId));
+
+    setActive(false);
+  }
+
+  return (
+    <div 
+     onDrop={handleDragEnd}
+     onDragOver={handleDragOver}
+     onDragLeave={handleDragLeave}
+     className={`mt-10 grid h-56 w-56 shrink-0 place-content-center rounded border text-3xl ${
+      active
+        ? "border-red-800 bg-red-800/20 text-red-500"
+        : "border-neutral-500 bg-neutral-500/20 text-neutral-500"
+    }`}>
+      {active ? <FaFire  className="animate-bounce"/> : <FiTrash/>}
+    </div>
+  )
+}
+
+const AddCard = ({ column, setCards }: { column: string, setCards: any }) => {
+  const [ text, setText ] = useState("");
+  const [ adding, setAdding ] = useState(false);
+
+  const handleSubmit = (e: any) => {
+    e.preventDefault();
+
+    if (!text.trim().length) return;
+
+    const newCard = {
+      column,
+      title: text.trim(),
+      id: Math.random().toString(),
+    }
+
+    setCards((pv: Card[]) => [...pv, newCard])
+
+    setAdding(false);
+  }
+
+  return (
+    <>
+      {adding ? (
+        <motion.form
+         layout 
+         onSubmit={handleSubmit}>
+          <textarea
+            onChange={(e) => setText(e.target.value)}
+            autoFocus
+            placeholder="Add new task..."
+            className="w-full rounded border coppergroup-gradient p-3 text-sm text-neutral-50 placeholder-white focus:outline-0"
+          />
+          <div className="mt-1.5 flex items-center justify-end gap-1.5">
+            <button
+            onClick={() => setAdding(false)}
+            className="px-3 py-1.5 text-xs text-neutral-400 transition-colors hover:text-neutral-50"
+            >
+              Close
+            </button>
+
+            <button 
+            type="submit" 
+            className="flex items-center gap-1.5 rounded bg-neutral-50 px-3 py-1.5 text-xs text-neutral-950 transition-colors hover:bg-neutral-300"
+            >
+              <span>Add</span> 
+              <FiPlus/>
+            </button>
+          </div>
+        </motion.form>
+      ) : <motion.button
+       layout
+       onClick={() => setAdding(true)}
+       className="flex gap-[2px] items-center px-3 py-1.5 text-xs text-neutral-400 transition-colors hover:text-neutral-50"
+      >
+          <span>Add card</span>
+          <FiPlus/>
+        </motion.button>
+      }
+    </>
+  )
 }
