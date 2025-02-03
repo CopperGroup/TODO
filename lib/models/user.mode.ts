@@ -5,6 +5,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, "Please provide a email"],
     },
+    clerkId: {
+        type: String,
+        required: true,
+    },
     email: {
         type: String,
         required: [true, "Please provide a email"],
