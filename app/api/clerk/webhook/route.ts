@@ -6,32 +6,38 @@ import User from "@/lib/models/user.mode";
 const CLERK_WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET!;
 
 export async function POST(req: NextRequest) {
-  const rawBody = await req.text(); // Get raw body for signature verification
-  const signature = req.headers.get("clerk-signature");
+  console.log("Webhook received");
 
-  // Verify Clerk signature (important for security)
-  if (!signature || !CLERK_WEBHOOK_SECRET) {
-    return new NextResponse("Unauthorized", { status: 401 });
-  }
+  const rawBody = await req.text(); // Get raw request body
+  console.log("Raw body:", rawBody);
 
   try {
     const event: WebhookEvent = JSON.parse(rawBody);
+    console.log("Parsed event:", event);
 
     if (event.type === "user.created") {
+      console.log("User created event received");
+
       const { id, first_name, last_name, email_addresses, image_url } = event.data;
 
-      await connectToDB(); // Ensure MongoDB connection
+      await connectToDB();
 
       // Check if user already exists
       const existingUser = await User.findOne({ email: email_addresses[0].email_address });
-      if (!existingUser) {
-        await User.create({
-          name: `${first_name} ${last_name}`,
-          email: email_addresses[0].email_address,
-          profilePicture: image_url,
-          online: false,
-        });
+      if (existingUser) {
+        console.log("User already exists in the database");
+        return new NextResponse("User already exists", { status: 200 });
       }
+
+      // Create new user
+      const newUser = await User.create({
+        name: `${first_name} ${last_name}`,
+        email: email_addresses[0].email_address,
+        profilePicture: image_url,
+        online: false,
+      });
+
+      console.log("User saved:", newUser);
     }
 
     return new NextResponse("User created successfully", { status: 200 });
