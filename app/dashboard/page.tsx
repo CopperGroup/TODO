@@ -6,6 +6,7 @@ import { PlusCircle, MessageCircle, Users, Calendar, BarChart2 } from "lucide-re
 import CreateTeamForm from "@/components/forms/CreateTeam"
 import { fetchUsersTeams } from "@/lib/actions/team.actions"
 import { cn, getTextColorBasedOnBackground } from "@/lib/utils"
+import Link from "next/link"
 
 // Mock data (replace with actual data fetching in a real application)
 const mockTeams = [
@@ -121,64 +122,66 @@ export default async function TeamsPage() {
           const textColor = getTextColorBasedOnBackground(teamColor);
           console.log("from-[" + teamColor + "30" + "]" + " " + "to-[" + teamColor + "]")
           return (
-            <Card key={team._id} className="overflow-hidden">
-              <CardHeader style={{ background: `linear-gradient(to left, ${teamColor}90, ${teamColor})` }} className="p-4">
-                <CardTitle className="text-2xl" style={{ color: textColor }}>{team.name}</CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Tasks Progress</p>
-                    {/* <Progress value={(team.tasks.filter(task => task.column === team.boards) / team.tasks.length) * 100} className="w-32" /> */}
-                  </div>
-                  <Badge variant="secondary" className="flex items-center">
-                    <MessageCircle className="mr-1 h-4 w-4" />
-                    15 unread
-                  </Badge>
-                </div>
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div>
-                    <div className="flex items-center mb-2">
-                      <Users className="mr-2 h-5 w-5" style={{ color: teamColor }}/>
-                      <p className="text-sm font-semibold">Team Members</p>
+            <Link href={`/dashboard/team/${team._id}`}>
+              <Card key={team._id} className="overflow-hidden">
+                <CardHeader style={{ background: `linear-gradient(to left, ${teamColor}90, ${teamColor})` }} className="p-4">
+                  <CardTitle className="text-2xl" style={{ color: textColor }}>{team.name}</CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="flex justify-between items-center mb-6">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-1">Tasks Progress</p>
+                      {/* <Progress value={(team.tasks.filter(task => task.column === team.boards) / team.tasks.length) * 100} className="w-32" /> */}
                     </div>
-                    <div className="flex -space-x-2">
-                      {team.users.slice(0, 3).map((member) => (
-                        <div className="relative">
-                          <Avatar key={member.user._id} className="border-2 border-white">
-                            <AvatarImage className="aspect-auto" src={member.user.profilePicture} alt={member.user.name} />
-                            <AvatarFallback>{member.user.name.charAt(0)}</AvatarFallback>
-                          </Avatar>
-                          <div className={`absolute w-3 h-3 bottom-0.5 right-0.5 rounded-full ${ member.user.online ? "bg-green-500" : "bg-gray-400"}`}></div>
-                        </div>
-                      ))}
+                    <Badge variant="secondary" className="flex items-center">
+                      <MessageCircle className="mr-1 h-4 w-4" />
+                      15 unread
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div>
+                      <div className="flex items-center mb-2">
+                        <Users className="mr-2 h-5 w-5" style={{ color: teamColor }}/>
+                        <p className="text-sm font-semibold">Team Members</p>
+                      </div>
+                      <div className="flex -space-x-2">
+                        {team.users.slice(0, 3).map((member) => (
+                          <div key={member.user._id} className="relative">
+                            <Avatar className="border-2 border-white">
+                              <AvatarImage className="aspect-auto" src={member.user.profilePicture} alt={member.user.name} />
+                              <AvatarFallback>{member.user.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div className={`absolute w-3 h-3 bottom-0.5 right-0.5 rounded-full ${ member.user.online ? "bg-green-500" : "bg-gray-400"}`}></div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex items-center mb-2">
+                        <BarChart2 className="mr-2 h-5 w-5" style={{ color: teamColor }}/>
+                        <p className="text-sm font-semibold">Active Boards</p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {team.boards.map((board) => (
+                          <Badge key={board._id} variant="outline">
+                            {board.name}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                  <div>
-                    <div className="flex items-center mb-2">
-                      <BarChart2 className="mr-2 h-5 w-5" style={{ color: teamColor }}/>
-                      <p className="text-sm font-semibold">Active Boards</p>
+                  <div className="space-y-2">
+                    <div className="flex items-center">
+                      <Calendar className="mr-2 h-5 w-5" style={{ color: teamColor }}/>
+                      {/* <p className="text-sm">Next meeting: {new Date(team.nextMeeting).toLocaleString()}</p> */}
+                      <p className="text-sm">Next meeting: tomorrow</p>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      {team.boards.map((board) => (
-                        <Badge key={board._id} variant="outline">
-                          {board.name}
-                        </Badge>
-                      ))}
-                    </div>
+                    {/* <p className="text-sm text-muted-foreground">Recent activity: {team.recentActivity}</p> */}
+                    <p className="text-sm text-muted-foreground">Recent activity: user add new task</p>
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center">
-                    <Calendar className="mr-2 h-5 w-5" style={{ color: teamColor }}/>
-                    {/* <p className="text-sm">Next meeting: {new Date(team.nextMeeting).toLocaleString()}</p> */}
-                    <p className="text-sm">Next meeting: tomorrow</p>
-                  </div>
-                  {/* <p className="text-sm text-muted-foreground">Recent activity: {team.recentActivity}</p> */}
-                  <p className="text-sm text-muted-foreground">Recent activity: user add new task</p>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </Link>
             )
           }
         )}
