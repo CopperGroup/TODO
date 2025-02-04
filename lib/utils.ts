@@ -28,3 +28,7 @@ export function getTextColorBasedOnBackground(hexColor: string): string {
   // If brightness is below a threshold, use white text, otherwise use black text
   return brightness < 128 ? 'white' : 'black';
 }
+
+export function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}

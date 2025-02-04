@@ -6,7 +6,7 @@ import { Progress } from "@/components/ui/progress"
 import { PlusCircle, MessageCircle, Users, Calendar, BarChart2 } from "lucide-react"
 import CreateTeamForm from "@/components/forms/CreateTeam"
 import { fetchUsersTeams } from "@/lib/actions/team.actions"
-import { cn, getTextColorBasedOnBackground } from "@/lib/utils"
+import { cn, getTextColorBasedOnBackground, sleep } from "@/lib/utils"
 import Link from "next/link"
 import { currentUser } from '@clerk/nextjs/server'
 
@@ -50,7 +50,6 @@ const mockTeams = [
 ]
 
 export default async function TeamsPage() {
-  
   const user = await currentUser();
 
   const myTeams = await fetchUsersTeams({ clerkId: user?.id });
