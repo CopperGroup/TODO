@@ -1,3 +1,4 @@
+// 'use client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -7,6 +8,7 @@ import CreateTeamForm from "@/components/forms/CreateTeam"
 import { fetchUsersTeams } from "@/lib/actions/team.actions"
 import { cn, getTextColorBasedOnBackground } from "@/lib/utils"
 import Link from "next/link"
+import { currentUser } from '@clerk/nextjs/server'
 
 // Mock data (replace with actual data fetching in a real application)
 const mockTeams = [
@@ -48,10 +50,10 @@ const mockTeams = [
 ]
 
 export default async function TeamsPage() {
+  
+  const user = await currentUser();
 
-  const myTeams = await fetchUsersTeams();
-
-  console.log(myTeams)
+  const myTeams = await fetchUsersTeams({ clerkId: user?.id });
 
   return (
     <div className="container mx-auto p-4 space-y-8">

@@ -139,22 +139,20 @@ export async function createTeam({ name, usersEmails, adminClerkId }: createTeam
 }
 
 
-export async function fetchUsersTeams(): Promise<PopulatedTeamType[]>;
-export async function fetchUsersTeams(type: 'json'): Promise<string>;
+export async function fetchUsersTeams({ clerkId }: { clerkId: string | undefined }): Promise<PopulatedTeamType[]>;
+export async function fetchUsersTeams({ clerkId }: { clerkId: string | undefined }, type: 'json'): Promise<string>;
 
-export async function fetchUsersTeams(type?: 'json') {
+export async function fetchUsersTeams({ clerkId }: { clerkId: string | undefined }, type?: 'json') {
    try {
 
     await connectToDB();
 
-    const { userId } = await auth();
-
-    if (!userId) {
+    if (!clerkId) {
       throw new Error("User is not authenticated");
     }
 
     // Step 2: Get the corresponding user from the database
-    const user = await User.findOne({ clerkId: userId });
+    const user = await User.findOne({ clerkId });
 
     if (!user) {
       throw new Error("User not found in database");
