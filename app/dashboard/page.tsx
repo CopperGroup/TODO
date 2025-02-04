@@ -122,8 +122,8 @@ export default async function TeamsPage() {
           const textColor = getTextColorBasedOnBackground(teamColor);
           console.log("from-[" + teamColor + "30" + "]" + " " + "to-[" + teamColor + "]")
           return (
-            <Link href={`/dashboard/team/${team._id}`}>
-              <Card key={team._id} className="overflow-hidden">
+            <Link href={`/dashboard/team/${team._id}`}  key={team._id}>
+              <Card className="overflow-hidden">
                 <CardHeader style={{ background: `linear-gradient(to left, ${teamColor}90, ${teamColor})` }} className="p-4">
                   <CardTitle className="text-2xl" style={{ color: textColor }}>{team.name}</CardTitle>
                 </CardHeader>
