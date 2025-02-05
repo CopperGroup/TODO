@@ -42,3 +42,19 @@ export type PopulatedTeamType = {
     invitedMembers: string[]; // List of emails for invited members
     themeColor: string;
   };
+
+
+export interface Card {
+  id: string
+  title: string
+  column: string
+  position: number
+}
+
+export type Column = {
+  id: string
+  title: string
+  position: number
+  headingColor: string
+}
+

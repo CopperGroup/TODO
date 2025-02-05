@@ -1,4 +1,4 @@
-import mongoose, { InferSchemaType } from "mongoose";
+import mongoose, { InferSchemaType, Types } from "mongoose";
 
 const teamSchema = new mongoose.Schema({
   name: {
@@ -42,7 +42,7 @@ const teamSchema = new mongoose.Schema({
   ]
 });
 
-type TeamType = InferSchemaType<typeof teamSchema>;
+type TeamType = InferSchemaType<typeof teamSchema> & { _id: Types.ObjectId};
 
 const Team = mongoose.models.Team || mongoose.model<TeamType>("Team", teamSchema);
 

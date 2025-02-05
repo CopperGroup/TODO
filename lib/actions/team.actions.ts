@@ -17,7 +17,7 @@ type createTeamParams = {
 }
 
 
-export async function createTeam({ name, usersEmails, adminClerkId }: createTeamParams): Promise<(TeamType & { _id: string })>;
+export async function createTeam({ name, usersEmails, adminClerkId }: createTeamParams): Promise<(TeamType)>;
 export async function createTeam({ name, usersEmails, adminClerkId }: createTeamParams, type: 'json'): Promise<string>;
 
 export async function createTeam({ name, usersEmails, adminClerkId }: createTeamParams, type?: 'json') {
@@ -50,13 +50,13 @@ export async function createTeam({ name, usersEmails, adminClerkId }: createTeam
     
     for(const user of existingUsers) {
         user.teams.push(createdTeam._id)
-        user.people.push(admin._id)
+        // user.people.push(admin._id)
         await user.save()
     }
 
     admin.teams.push(createdTeam._id)
 
-    admin.people.push(existingUsers.map(user => user._id))
+    // admin.people.push(existingUsers.map(user => user._id))
     await admin.save()
 
     const firstBoard = await Board.create({
@@ -173,4 +173,38 @@ export async function fetchUsersTeams({ clerkId }: { clerkId: string | undefined
    } catch (error: any) {
      throw new Error(`${error.message}`)
    }
+}
+
+export async function fetchUsersTeamsIdNameColorBoards({ clerkId }: { clerkId: string | undefined }): Promise<{ teamId: string, name: string, teamColor: string, boards: { boardId: string, name: string}[]}[]> {
+  try {
+    await connectToDB();
+
+    if (!clerkId) {
+      throw new Error("User is not authenticated");
+    }
+
+    // Step 2: Get the corresponding user from the database
+    const user = await User.findOne({ clerkId });
+
+    if (!user) {
+      throw new Error("User not found in database");
+    }
+
+    const teams: (TeamType & { boards: { _id: Types.ObjectId; name: string }[] })[] = await Team.find({ "users.user": user._id })
+    .populate('boards', '_id name')
+    .exec();
+  
+    return teams.map(team => ({
+      teamId: team._id.toString(),
+      name: team.name,
+      teamColor: team.themeColor,
+      boards: (team.boards as { _id: Types.ObjectId; name: string }[]).map(board => ({
+        boardId: board._id.toString(),
+        name: board.name
+      }))
+    }));
+  
+  } catch (error: any) {
+    throw new Error(`${error.message}`)
+  }
 }
