@@ -1,13 +1,13 @@
-"use client"
-
 import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
+import { currentUser } from "@clerk/nextjs/server"
+import Link from "next/link"
 
-export default function Home() {
-  const { user } = useUser()
+export default async function Home() {
+  const user = await currentUser()
 
-  const router = useRouter()
+  // const router = useRouter()
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center coppergroup-gradient animate-gradient-shift relative overflow-hidden">
@@ -25,9 +25,9 @@ export default function Home() {
         <SignedIn>
           <h1 className="text-3xl font-bold mb-4 text-white">Hi, {user?.firstName}! 👋</h1>
           <p className="text-xl mb-8 text-white/80">Let&apos;s get to work</p>
-          <Button className="bg-white text-copper-900 font-semibold py-2 px-4 rounded-lg hover:bg-white/90 transition-colors" onClick={() => router.push('/dashboard')}>
+          <Link href="/dashboard" className="bg-white text-copper-900 font-semibold py-2 px-4 rounded-lg hover:bg-white/90 transition-colors">
             Get to Work
-          </Button>
+          </Link>
           <div className="mt-8">
             {/* <UserButton
               appearance={{
