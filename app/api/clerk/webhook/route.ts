@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { WebhookEvent, UserJSON } from "@clerk/nextjs/server"; // Make sure UserJSON is imported
 import { connectToDB } from "@/lib/mongoose";
-import User from "@/lib/models/user.mode";
+import User from "@/lib/models/user.model";
 
 const CLERK_WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET!;
 

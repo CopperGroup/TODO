@@ -1,10 +1,10 @@
 
-const VerticalIndicator = ({ beforeId, column }: { beforeId: string | null, column: string} ) => {
+const VerticalIndicator = ({ beforeId }: { beforeId: string | null } ) => {
     return (
       <div
-        data-before-position={beforeId || "-1"}
-        data-current-column={column} 
-        className="my-0.5 h-full min-w-0.5 bg-violet-400 opacity-0">
+        data-beforecolumn={beforeId || "-1"}
+        data-iscolumn="true" 
+        className="mx-0.5 h-full min-w-0.5 max-w-0.5 bg-violet-400 opacity-0">
       </div>
     )
   }

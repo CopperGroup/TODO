@@ -34,7 +34,7 @@ const userSchema = new mongoose.Schema({
   ]
 });
 
-type UserType = InferSchemaType<typeof userSchema>;
+type UserType = InferSchemaType<typeof userSchema> & { _id: string };
 
 const User = mongoose.models.User || mongoose.model<UserType>("User", userSchema);
 

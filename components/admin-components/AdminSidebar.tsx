@@ -92,9 +92,8 @@ export function AdminSidebar({ teams }: { teams: { teamId: string, name: string,
               </DropdownMenuTrigger>
               <DropdownMenuContent className="max-h-[200px] w-[--radix-dropdown-menu-trigger-width] overflow-y-auto custom-scrollbar-white" align="start">
                 {teams.map((team) => (
-                  <Link href={`/dashboard/team/${team.teamId}`}>
+                  <Link href={`/dashboard/team/${team.teamId}`} key={team.teamId}>
                     <DropdownMenuItem
-                      key={team.teamId}
                       onSelect={() => setSelectedTeam(team)}
                       className="flex items-center gap-3 py-2"
                     >

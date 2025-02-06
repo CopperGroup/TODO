@@ -15,6 +15,12 @@ const boardSchema = new mongoose.Schema({
             ref: 'Column'
         }
     ],
+    tasks: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Task'
+        }
+    ]
 })
 
 const Board = mongoose.models.Board || mongoose.model("Board", boardSchema);

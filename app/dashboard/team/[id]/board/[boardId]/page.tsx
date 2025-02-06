@@ -1,10 +1,5 @@
-"use client";
-
-import { useState } from "react";
-import { FaFire } from "react-icons/fa";
-import { FiPlus, FiTrash } from "react-icons/fi";
-import { motion } from "framer-motion"
 import Board from "@/components/KanBoard/Board";
+import { fetchBoardById } from "@/lib/actions/board.actions";
 
 interface Card {
   title: string; 
@@ -12,10 +7,18 @@ interface Card {
   column: string
 }
 
-export default function Page() {
+export default async function Page({ params }: { params: { boardId: string } }) {
+  if(!params.boardId) {
+    return (
+      <h1>Board does not exist</h1>
+    )
+  }
+
+  const stringifiedBoard = await fetchBoardById({ boardId: params.boardId }, 'json');
+
   return (
-    <main className="h-screen w-full bg-neutral-900 text-neutral-50">
-      <Board />
-    </main>
+    <section className="h-screen w-full bg-neutral-900 text-neutral-50">
+      <Board stringifiedBoard={stringifiedBoard} />
+    </section>
   );
 }

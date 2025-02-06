@@ -65,6 +65,15 @@
         padding: 3px; /* Add some padding to make space for the border */
       }
     
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      /* Hide scrollbar for IE, Edge and Firefox */
+      .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+      }
+
       .coppergroup-border::before {
         content: '';
         position: absolute;
@@ -230,6 +239,25 @@
         rgba(102, 46, 0, 1) 100%);
     }
 
+    .custom-scrollbar-blue::-webkit-scrollbar {
+      width: 3px;
+      height: 3px;
+      border-radius: 2px;
+    }
+    
+    .custom-scrollbar-blue::-webkit-scrollbar-track {
+        background: #f3f4f6;
+    }
+    
+    .custom-scrollbar-blue::-webkit-scrollbar-thumb {
+        background: #3b82f6;
+        border-radius: 50px;
+    }
+    
+    .custom-scrollbar-blue::-webkit-scrollbar-thumb:hover {
+        background: #2973e9
+    }
+    
     @keyframes gradientShift {
       0% {
         background-position: 0% 50%;

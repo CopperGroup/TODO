@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { InferSchemaType, Types } from "mongoose";
 
 const columnSchema = new mongoose.Schema({
     name: {
@@ -7,24 +7,22 @@ const columnSchema = new mongoose.Schema({
     },
     textColor: {
         type: String,
-        default: "#000000"
-    },
-    backgroundColor: {
-        type: String,
         default: "#ffffff"
     },
+    // backgroundColor: {
+    //     type: String,
+    //     default: "#000000"
+    // },
     board: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Board'
     },
-    tasks: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Task'
-        }
-    ],
 })
+
+type ColumnType = InferSchemaType<typeof columnSchema> & { _id: string};
 
 const Column = mongoose.models.Column || mongoose.model("Column", columnSchema);
 
 export default Column;
+
+export type { ColumnType };

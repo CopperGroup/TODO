@@ -48,13 +48,66 @@ export interface Card {
   id: string
   title: string
   column: string
-  position: number
+  type: string
 }
 
 export type Column = {
-  id: string
-  title: string
-  position: number
-  headingColor: string
+  _id: string
+  name: string
+  textColor: string
 }
 
+import { Types } from "mongoose";
+
+// Comment Type (Populated)
+export type PopulatedCommentType = {
+  _id: string;
+  content: string;
+  author: UserType; // Populated with User
+  task: PopulatedTaskType; // Populated with Task
+  parentId: PopulatedCommentType | null; // Populated with Comment (if reply)
+  attachments: string[];
+  responses: PopulatedCommentType[]; // Populated replies (nested)
+};
+
+// Task Type (Populated)
+export type PopulatedTaskType = {
+  _id: string;
+  description: string;
+  author: UserType; // Populated with User
+  column: PopulatedColumnType; // Populated with Column
+  assignedTo: UserType[]; // Populated Users
+  parentId: PopulatedTaskType | null; // Populated Task (if parent)
+  subTasks: PopulatedTaskType[]; // Populated SubTasks
+  linkedTasks: PopulatedTaskType[]; // Populated Linked Tasks
+  createdAt: Date;
+  attachments: string[];
+  comments: PopulatedCommentType[]; // Populated Comments
+  type?: string; // Optional task type
+};
+
+// Column Type (Populated)
+export type PopulatedColumnType = {
+  _id: string;
+  name: string;
+  textColor: string;
+  backgroundColor: string;
+  board: PopulatedBoardType; // Populated with Board
+};
+
+// Board Type (Populated)
+export type PopulatedBoardType = {
+  _id: string;
+  name: string;
+  team: PopulatedTeamType; // Populated with Team
+  columns: PopulatedColumnType[]; // Populated Columns
+  tasks: PopulatedTaskType[];
+};
+
+// User Type (Populated for Author and Assignee)
+export type UserType = {
+  _id: string;
+  name: string;
+  email: string;
+  // Add other fields you have in the User model
+};

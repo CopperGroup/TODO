@@ -14,6 +14,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { PlusCircle, X } from "lucide-react"
 import { createTeam } from "@/lib/actions/team.actions"
 import { useUser } from "@clerk/nextjs"
+import { useRouter } from "next/navigation"
 
 // Mock user data for suggestions
 const mockUsers = [
@@ -32,6 +33,8 @@ const formSchema = z.object({
 
 export default function CreateTeamForm() {
   const [members, setMembers] = useState<{ label: string; value: string }[]>([])
+  const [isCreating, setIsCreating] = useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false)
 
   const { user } = useUser()
 
@@ -43,13 +46,20 @@ export default function CreateTeamForm() {
   })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log("Creating team:", { ...values, members })
-
-    const result = await createTeam({ name: values.teamName, usersEmails: members.map(member => member.value), adminClerkId: user?.id}, 'json')
-    form.reset()
-    setMembers([])
+    setIsCreating(true); // Initialize Creating state
+    try {
+      const result = await createTeam({ name: values.teamName, usersEmails: members.map((member) => member.value), adminClerkId: user?.id }, "json");
+  
+      setDialogOpen(false)
+      form.reset();
+      setMembers([]);
+    } catch (error) {
+      console.error("Failed to create team:", error);
+    } finally {
+      setIsCreating(false);
+    }
   }
-
+  
   const handleAddMember = (member: { label: string; value: string }) => {
     if (!members.some((m) => m.value === member.value)) {
       setMembers([...members, member])
@@ -64,8 +74,8 @@ export default function CreateTeamForm() {
     <>
 
       <Dialog onOpenChange={() => {form.reset(), setMembers([])}}>
-        <DialogTrigger asChild>
-          <Button className="coppergroup-gradient text-gray-100">
+        <DialogTrigger asChild >
+          <Button className="coppergroup-gradient text-gray-100" onClick={() => setDialogOpen(true)}>
             <PlusCircle className="mr-2 h-4 w-4" /> Create Team
           </Button>
         </DialogTrigger>
@@ -97,6 +107,7 @@ export default function CreateTeamForm() {
                   allowCustomValue={true}
                   toastTitle="Invalid email"
                   toastDescription="Please provide a real email adress..."
+                  type="Email"
                 />
               </FormItem>
               {members.length > 0 && (
@@ -124,7 +135,7 @@ export default function CreateTeamForm() {
                 </FormItem>
               )}
               <DialogFooter>
-                <Button type="submit" className="coppergroup-gradient text-gray-100">
+                <Button type="submit" className="coppergroup-gradient text-gray-100" disabled={isCreating}>
                   Create Team
                 </Button>
               </DialogFooter>

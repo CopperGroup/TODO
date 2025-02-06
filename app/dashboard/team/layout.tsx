@@ -1,3 +1,5 @@
+"use server";
+
 import { AdminBreadcrumb } from "@/components/admin-components/AdminBreadcrumb"
 import { AdminSidebar } from "@/components/admin-components/AdminSidebar"
 import { SidebarProvider } from "@/components/ui/sidebar"
@@ -19,11 +21,11 @@ export default async function RootLayout({
       <section className="flex h-screen overflow-hidden">
         <SidebarProvider>
             <AdminSidebar teams={teams} />
-            <main className="w-full flex-1 overflow-auto">
+            <main className="w-full flex-1 overflow-auto custom-scrollbar-blue">
               <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b px-4 bg-white">
               <AdminBreadcrumb teams={teams} />
               </header>
-              <div className="flex-1 overflow-auto">{children}</div>
+              <div className="flex-1">{children}</div>
           </main>
         </SidebarProvider>
       </section>

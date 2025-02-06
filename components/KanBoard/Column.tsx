@@ -1,17 +1,50 @@
-import { Card as CardType } from "@/lib/types";
-import { useState } from "react";
+import { Card as CardType, PopulatedTaskType } from "@/lib/types";
+import React, { useState } from "react";
 import DropIndicator from "./Indicators";
 import Card from "./Card";
 import AddCard from "./AddCard";
+import { changeTasksColumn } from "@/lib/actions/board.actions";
+import { updateTaskColumn } from "@/lib/actions/task.actions";
+import { TeamType } from "@/lib/models/team.model";
+import { UserType } from "@/lib/models/user.model";
 
-const Column= ({  title, headingColor, column, cards, setCards, handleColumnDragStart, draggingColumn }: { title: string, column: string, headingColor: string, cards: any[], setCards: any, handleColumnDragStart: any, draggingColumn: boolean }) => {
+const Column= ({ 
+  boardId,
+  title, 
+  headingColor, 
+  column, 
+  cards, 
+  setCards, 
+  handleColumnDragStart, 
+  isDraggingColumn,
+  team,
+  setIsDraggingColumn,
+  // handleColumnDragOver,
+  // handleColumnDragEnd,
+  // handleColumnDragLeave,
+}: { 
+  boardId: string,
+  title: string, 
+  column: string, 
+  headingColor: string, 
+  team: TeamType & { users: { user: UserType, role: "Admin" | "Member"}},
+  cards: any[], 
+  setCards: any, 
+  handleColumnDragStart: any, 
+  isDraggingColumn: boolean,
+  setIsDraggingColumn: React.Dispatch<React.SetStateAction<boolean>>,
+  // handleColumnDragOver: (e: any) => void,
+  // handleColumnDragEnd: (e: any) => void,
+  // handleColumnDragLeave: (e: any) => void,
+}) => {
   const [active, setActive] = useState(false);
 
-  const handleDragStart = (e: any, card: CardType) => {
-    e.dataTransfer.setData("cardId", card.id);
+  const handleDragStart = (e: any, card: PopulatedTaskType) => {
+    setIsDraggingColumn(false)
+    e.dataTransfer.setData("cardId", card._id);
   };
 
-  const handleDragEnd = (e: any) => {
+  const handleDragEnd = async (e: any) => {
     const cardId = e.dataTransfer.getData("cardId");
 
     setActive(false);
@@ -25,49 +58,41 @@ const Column= ({  title, headingColor, column, cards, setCards, handleColumnDrag
     if (before !== cardId) {
       let copy = [...cards];
 
-      let cardToTransfer = copy.find((c) => c.id === cardId);
+      let cardToTransfer = copy.find((c) => c._id === cardId);
       if (!cardToTransfer) return;
       cardToTransfer = { ...cardToTransfer, column };
 
-      copy = copy.filter((c) => c.id !== cardId);
+      copy = copy.filter((c) => c._id !== cardId);
 
       const moveToBack = before === "-1";
 
       if (moveToBack) {
         copy.push(cardToTransfer);
       } else {
-        const insertAtIndex = copy.findIndex((el) => el.id === before);
+        const insertAtIndex = copy.findIndex((el) => el._id === before);
         if (insertAtIndex === undefined) return;
 
         copy.splice(insertAtIndex, 0, cardToTransfer);
       }
-
+      
       setCards(copy);
+      
+      await updateTaskColumn({ taskId: cardToTransfer._id, columnId: cardToTransfer.column})
+      await changeTasksColumn({ boardId, tasks: copy})
     }
   };
 
   const handleDragOver = (e: any) => {
     e.preventDefault();
 
-    if(!draggingColumn) {
+    if(!isDraggingColumn) {
       highlightIndicator(e);
       setActive(true);
-    } else {
-      highlightColumnIndicator(e);
     }
-
   };
 
   const clearHighlights = (els?: any[]) => {
     const indicators = els || getIndicators();
-
-    indicators.forEach((i) => {
-      i.style.opacity = "0";
-    });
-  };
-
-  const clearColumnHighlights = (els?: any[]) => {
-    const indicators = els || getColumnIndicators();
 
     indicators.forEach((i) => {
       i.style.opacity = "0";
@@ -108,47 +133,10 @@ const Column= ({  title, headingColor, column, cards, setCards, handleColumnDrag
     return el;
   };
 
-  const highlightColumnIndicator = (e: any) => {
-    const indicators = getColumnIndicators();
-
-    clearColumnHighlights(indicators);
-
-    const el = getNearestColumnIndicator(e, indicators);
-
-    el.element.style.opacity = "1";
-  };
-
-  const getNearestColumnIndicator = (e: any, indicators: any) => {
-    const DISTANCE_OFFSET = 50;
-
-    const el = indicators.reduce(
-      (closest: any, child: any) => {
-        const box = child.getBoundingClientRect();
-
-        const offset = e.clientX - (box.right + DISTANCE_OFFSET);
-
-        if (offset < 0 && offset > closest.offset) {
-          return { offset: offset, element: child };
-        } else {
-          return closest;
-        }
-      },
-      {
-        offset: Number.NEGATIVE_INFINITY,
-        element: indicators[indicators.length - 1],
-      }
-    );
-
-    return el;
-  };
-
   const getIndicators = () => {
     return Array.from(document.querySelectorAll(`[data-column="${column}"]`));
   };
 
-  const getColumnIndicators = () => {
-    return Array.from(document.querySelectorAll(`[data-current-column="${column}"]`));
-  };
 
   const handleDragLeave = () => {
     clearHighlights();
@@ -158,20 +146,17 @@ const Column= ({  title, headingColor, column, cards, setCards, handleColumnDrag
   const filteredCards = cards.filter((c) => c.column === column);
 
   return (
-    <div className="w-56 shrink-0"           draggable="true"
-    onDragStart={(e) => handleColumnDragStart(e, column)}
-    onDrop={handleDragEnd}
-    onDragOver={handleDragOver}>
-      <div className="mb-3 flex items-center justify-between">
-        <h3 className={`font-medium ${headingColor}`}>{title}</h3>
+    <div className="w-56 shrink-0"           
+    >
+      <div 
+        className="mb-3 flex items-center justify-between  cursor-grab active:cursor-grabbing focus:cursor-grabbing"  
+        draggable="true"         
+        onDragStart={(e) => handleColumnDragStart(e, column)}
+      >
+        <h3 className={`font-medium`} style={{ color: headingColor }}>{title}</h3>
         <span className="rounded text-sm text-neutral-400">
           {filteredCards.length}
         </span>
-        <div 
-          className="size-4 bg-gray-100 rounded-full"
-
-        >    
-        </div>
       </div>
       <div
         onDrop={handleDragEnd}
@@ -182,10 +167,15 @@ const Column= ({  title, headingColor, column, cards, setCards, handleColumnDrag
         }`}
       >
         {filteredCards.map((c) => {
-          return <Card key={c.id} {...c} handleDragStart={handleDragStart} />;
+          return <Card key={c._id} {...c} handleDragStart={handleDragStart} />;
         })}
         <DropIndicator beforeId={null} column={column} />
-        <AddCard column={column} setCards={setCards} />
+        <AddCard 
+          columnId={column} 
+          setCards={setCards} 
+          boardId={boardId}
+          teamId={team._id}
+        />
       </div>
     </div>
   );

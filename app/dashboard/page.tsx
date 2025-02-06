@@ -121,7 +121,6 @@ export default async function TeamsPage() {
           const teamColor = team.themeColor;
 
           const textColor = getTextColorBasedOnBackground(teamColor);
-          console.log("from-[" + teamColor + "30" + "]" + " " + "to-[" + teamColor + "]")
           return (
             <Link href={`/dashboard/team/${team._id}`}  key={team._id}>
               <Card className="overflow-hidden">

@@ -42,7 +42,7 @@ const teamSchema = new mongoose.Schema({
   ]
 });
 
-type TeamType = InferSchemaType<typeof teamSchema> & { _id: Types.ObjectId};
+type TeamType = InferSchemaType<typeof teamSchema> & { _id: string};
 
 const Team = mongoose.models.Team || mongoose.model<TeamType>("Team", teamSchema);
 

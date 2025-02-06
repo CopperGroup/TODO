@@ -17,9 +17,11 @@ interface ComboboxProps {
   allowCustomValue?: boolean
   toastTitle?: string, 
   toastDescription?: string,
+  className?: string
+  type?: "Email" | "String"
 }
 
-export function Combobox({ items, onSelect, placeholder, allowCustomValue = false, toastTitle, toastDescription }: ComboboxProps) {
+export function Combobox({ items, onSelect, placeholder, allowCustomValue = false, toastTitle, toastDescription, className, type = "String"}: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
   const [inputValue, setInputValue] = React.useState("")
 
@@ -27,17 +29,23 @@ export function Combobox({ items, onSelect, placeholder, allowCustomValue = fals
 
   const handleSelect = (currentValue: string) => {
 
-    if(isValidEmail(currentValue)) {
+    if(type === "Email") {
+      if(isValidEmail(currentValue)) {
+        onSelect({ label: currentValue, value: currentValue })
+        setInputValue("")
+        setOpen(false)
+      } else {
+        toast({
+          variant: "destructive",
+          title: toastTitle || "Uh oh! Something went wrong.",
+          description: toastDescription || "There was a problem with your request.",
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
+        })
+      }
+    } else {
       onSelect({ label: currentValue, value: currentValue })
       setInputValue("")
       setOpen(false)
-    } else {
-      toast({
-        variant: "destructive",
-        title: toastTitle || "Uh oh! Something went wrong.",
-        description: toastDescription || "There was a problem with your request.",
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
-      })
     }
   }
 
@@ -63,7 +71,7 @@ export function Combobox({ items, onSelect, placeholder, allowCustomValue = fals
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" role="combobox" aria-expanded={open} className="w-full font-medium justify-between">
+        <Button variant="outline" role="combobox" aria-expanded={open} className={cn("w-full font-medium justify-between", className)}>
           {inputValue || placeholder || "Select item..."}
           <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>

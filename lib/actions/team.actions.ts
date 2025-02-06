@@ -2,13 +2,13 @@
 
 import { Types } from "mongoose";
 import Team, { TeamType } from "../models/team.model";
-import User from "../models/user.mode";
+import User from "../models/user.model";
 import { connectToDB } from "../mongoose";
-import { auth } from "@clerk/nextjs/server";
 import Board from "../models/board.model";
 import Column from "../models/column.model";
 import Task from "../models/task.model";
 import { PopulatedTeamType } from "../types";
+import { revalidatePath } from "next/cache";
 
 type createTeamParams = {
    name: string
@@ -68,66 +68,60 @@ export async function createTeam({ name, usersEmails, adminClerkId }: createTeam
         const columns = [
             {
                 name: "Backlog",
-                textColor: "#ffffff",
-                backgroundColor: "#d3d3d3", // Light gray for backlog
+                textColor: "#737373",
                 board: firstBoard._id
             },
             {
-                name: "To Do",
-                textColor: "#ffffff",
-                backgroundColor: "#f0f0f0", // Light gray background
+                name: "TODO",
+                textColor: "#fef08a",
                 board: firstBoard._id
             },
             {
                 name: "In Progress",
-                textColor: "#ffffff",
-                backgroundColor: "#ffbf00", // Yellow background
+                textColor: "#bfdbfe",
                 board: firstBoard._id
             },
             {
                 name: "Done",
-                textColor: "#000000",
-                backgroundColor: "#d3ffd3", // Light green for completed tasks
+                textColor: "#a7f3d0",
                 board: firstBoard._id
             }
         ];
 
         const firstColumns = await Column.insertMany(columns);
 
-        const TODOColumn = firstColumns.find(column => column.name === "To Do")
+        const TODOColumn = firstColumns.find(column => column.name === "TODO")
 
-        if(TODOColumn) {
-            const exampleTask = {
-                description: "Meet Copper Group Kolos board",
-                author: admin._id,
-                column: TODOColumn._id,
-                assignedTo: [admin._id],  // Assigning the task to the author for simplicity
-                parentId: null,  // This is a top-level task, no parent
-                subTasks: [],  // No subtasks for this example
-                linkedTasks: [],  // No linked tasks for this example
-                commets: [],  // Assuming no comments for this task yet
-                type: "Issue"
-            };
+        const exampleTask = {
+            description: "Meet Copper Group Kolos board",
+            author: admin._id,
+            column: TODOColumn._id,
+            assignedTo: [admin._id],  // Assigning the task to the author for simplicity
+            parentId: null,  // This is a top-level task, no parent
+            subTasks: [],  // No subtasks for this example
+            linkedTasks: [],  // No linked tasks for this example
+            commets: [],  // Assuming no comments for this task yet
+            team: createdTeam._id,
+            type: "Issue"
+        };
 
-            const firstTask = await Task.create(exampleTask)
+        const firstTask = await Task.create(exampleTask)
 
-            if(firstTask) {
-                TODOColumn.tasks.push(firstTask._id);
-    
-                await TODOColumn.save()
-    
-                createdTeam.tasks.push(firstTask._id)
-            }
-
-            firstBoard.columns = firstColumns;
-
-            firstBoard.save()
+        if(firstTask) {
+          firstBoard.tasks.push(firstTask._id)
+          createdTeam.tasks.push(firstTask._id)
         }
+
+        firstBoard.columns = firstColumns;
+
+        firstBoard.save()
 
         createdTeam.boards.push(firstBoard._id)
 
         await createdTeam.save()
     }
+
+    revalidatePath("/dashboard")
     if(type === 'json'){
       return JSON.stringify(createdTeam)
     } else {
