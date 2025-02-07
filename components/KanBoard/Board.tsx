@@ -3,7 +3,7 @@
 import React, { SetStateAction, useCallback, useEffect, useRef, useState } from "react";
 import Column from "./Column";
 import BurnBarrel from "./BurnBarrel";
-import { Column as ColumnType, PopulatedBoardType, PopulatedColumnType } from "@/lib/types";
+import { Column as ColumnType, PopulatedBoardType, PopulatedColumnType, PopulatedTaskType } from "@/lib/types";
 import VerticalIndicator from "./VerticalIndicator";
 import { AddColumn } from "./AddColumn";
 import { motion } from "framer-motion"
@@ -57,8 +57,16 @@ function debounce(func: Function, wait: number) {
   }
 }
 
+type TaskType = (PopulatedTaskType & {
+  tasksLinkedToThis: string[]; // Specify that this field is an array of strings
+  board: string;
+  team: string;
+});
+
+type BoardType = (PopulatedBoardType & { tasks: TaskType[]})
+
 const Board = ({ stringifiedBoard }: { stringifiedBoard: string }) => {
-  const board: PopulatedBoardType = JSON.parse(stringifiedBoard)
+  const board: BoardType = JSON.parse(stringifiedBoard)
 
   const [ cards, setCards ] = useState(board.tasks);
   const [ columns, setColumns ] = useState<PopulatedColumnType[]>(board.columns);
@@ -249,7 +257,7 @@ const Board = ({ stringifiedBoard }: { stringifiedBoard: string }) => {
               <AddColumn boardId={board._id} setState={setColumns as unknown as React.Dispatch<SetStateAction<ColumnType[]>>}/> 
                 {/* TODO: fix state */}
             </div>
-            <BurnBarrel setCards={setCards}/>
+            <BurnBarrel cards={board.tasks} setCards={setCards}/>
           </div>
         </div>
       </div>

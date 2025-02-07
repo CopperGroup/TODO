@@ -8,13 +8,21 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
-import { Combobox } from "@/components/ui/combobox"
+import {
+  Combobox,
+  ComboboxTrigger,
+  ComboboxContent,
+  ComboboxInput,
+  ComboboxList,
+  ComboboxItem,
+  ComboboxEmpty,
+} from "@/components/ui/combobox"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { PlusCircle, X } from "lucide-react"
+import { PlusCircle, X, User } from "lucide-react"
 import { createTeam } from "@/lib/actions/team.actions"
 import { useUser } from "@clerk/nextjs"
-import { useRouter } from "next/navigation"
+import { useToast } from "@/hooks/use-toast"
 
 // Mock user data for suggestions
 const mockUsers = [
@@ -35,8 +43,11 @@ export default function CreateTeamForm() {
   const [members, setMembers] = useState<{ label: string; value: string }[]>([])
   const [isCreating, setIsCreating] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [comboboxOpen, setComboboxOpen] = useState(false)
+  const [inputValue, setInputValue] = useState("")
 
   const { user } = useUser()
+  const { toast } = useToast()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -46,23 +57,36 @@ export default function CreateTeamForm() {
   })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsCreating(true); // Initialize Creating state
+    setIsCreating(true)
     try {
-      const result = await createTeam({ name: values.teamName, usersEmails: members.map((member) => member.value), adminClerkId: user?.id }, "json");
-  
+      await createTeam(
+        { name: values.teamName, usersEmails: members.map((member) => member.value), adminClerkId: user?.id },
+        "json",
+      )
       setDialogOpen(false)
-      form.reset();
-      setMembers([]);
+      form.reset()
+      setMembers([])
+      toast({
+        title: "Team created",
+        description: "Your new team has been created successfully.",
+      })
     } catch (error) {
-      console.error("Failed to create team:", error);
+      console.error("Failed to create team:", error)
+      toast({
+        title: "Error",
+        description: "Failed to create team. Please try again.",
+        variant: "destructive",
+      })
     } finally {
-      setIsCreating(false);
+      setIsCreating(false)
     }
   }
-  
+
   const handleAddMember = (member: { label: string; value: string }) => {
     if (!members.some((m) => m.value === member.value)) {
       setMembers([...members, member])
+      setInputValue("")
+      setComboboxOpen(false)
     }
   }
 
@@ -70,12 +94,26 @@ export default function CreateTeamForm() {
     setMembers(members.filter((m) => m.value !== memberValue))
   }
 
+  const isValidEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
+
+  const filteredItems = mockUsers.filter(
+    (item) =>
+      !members.some((m) => m.value === item.value) &&
+      (item.label.toLowerCase().includes(inputValue.toLowerCase()) ||
+        item.value.toLowerCase().includes(inputValue.toLowerCase())),
+  )
+
   return (
     <>
-
-      <Dialog onOpenChange={() => {form.reset(), setMembers([])}}>
-        <DialogTrigger asChild >
-          <Button className="coppergroup-gradient text-gray-100" onClick={() => setDialogOpen(true)}>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogTrigger asChild>
+          <Button
+            className="coppergroup-gradient text-gray-100"
+            onClick={() => setDialogOpen(true)}
+          >
             <PlusCircle className="mr-2 h-4 w-4" /> Create Team
           </Button>
         </DialogTrigger>
@@ -84,7 +122,7 @@ export default function CreateTeamForm() {
             <DialogTitle className="text-2xl font-bold">Create New Team</DialogTitle>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
                 control={form.control}
                 name="teamName"
@@ -92,7 +130,7 @@ export default function CreateTeamForm() {
                   <FormItem>
                     <FormLabel>Team Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter team name" {...field} />
+                      <Input placeholder="Enter team name" className="w-full" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -100,15 +138,46 @@ export default function CreateTeamForm() {
               />
               <FormItem>
                 <FormLabel>Add Members</FormLabel>
-                <Combobox
-                  items={mockUsers.filter((user) => !members.some((m) => m.value === user.value))}
-                  onSelect={handleAddMember}
-                  placeholder="Search for members or enter email..."
-                  allowCustomValue={true}
-                  toastTitle="Invalid email"
-                  toastDescription="Please provide a real email adress..."
-                  type="Email"
-                />
+                <Combobox open={comboboxOpen} onOpenChange={setComboboxOpen}>
+                  <ComboboxTrigger className="w-full">
+                    {inputValue || "Search for members or enter email..."}
+                  </ComboboxTrigger>
+                  <ComboboxContent className="w-[400px] p-0">
+                    <ComboboxInput
+                      placeholder="Search for members or enter email..."
+                      value={inputValue}
+                      onValueChange={setInputValue}
+                      className="w-full border-b p-2"
+                    />
+                    <ComboboxList className="max-h-[200px] overflow-y-auto">
+                      {filteredItems.length === 0 && !isValidEmail(inputValue) && (
+                        <ComboboxEmpty>No members found.</ComboboxEmpty>
+                      )}
+                      {filteredItems.map((item) => (
+                        <ComboboxItem
+                          key={item.value}
+                          value={item.value}
+                          onSelect={() => handleAddMember(item)}
+                          className="flex items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        >
+                          <User className="mr-2 h-4 w-4" />
+                          <span>{item.label}</span>
+                          <span className="ml-auto text-sm text-gray-500">{item.value}</span>
+                        </ComboboxItem>
+                      ))}
+                      {isValidEmail(inputValue) && !filteredItems.some((item) => item.value === inputValue) && (
+                        <ComboboxItem
+                          value={inputValue}
+                          onSelect={() => handleAddMember({ label: inputValue, value: inputValue })}
+                          className="flex items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        >
+                          <PlusCircle className="mr-2 h-4 w-4" />
+                          <span>Add "{inputValue}"</span>
+                        </ComboboxItem>
+                      )}
+                    </ComboboxList>
+                  </ComboboxContent>
+                </Combobox>
               </FormItem>
               {members.length > 0 && (
                 <FormItem>
@@ -116,13 +185,14 @@ export default function CreateTeamForm() {
                   <ScrollArea className="h-[100px] w-full rounded-md border p-2">
                     <div className="flex flex-wrap gap-2">
                       {members.map((member) => (
-                        <Badge key={member.value} variant="secondary" className="flex items-center gap-1">
-                          {member.label}
+                        <Badge key={member.value} variant="secondary" className="flex items-center gap-1 px-2 py-1">
+                          <User className="h-3 w-3" />
+                          <span className="text-sm">{member.label}</span>
                           <Button
                             type="button"
                             variant="ghost"
                             size="sm"
-                            className="h-4 w-4 p-0"
+                            className="h-4 w-4 p-0 hover:bg-transparent"
                             onClick={() => handleRemoveMember(member.value)}
                           >
                             <X className="h-3 w-3" />
@@ -135,15 +205,18 @@ export default function CreateTeamForm() {
                 </FormItem>
               )}
               <DialogFooter>
-                <Button type="submit" className="coppergroup-gradient text-gray-100" disabled={isCreating}>
-                  Create Team
+                <Button
+                  type="submit"
+                  className="w-full coppergroup-gradient text-gray-100"
+                  disabled={isCreating}
+                >
+                  {isCreating ? "Creating..." : "Create Team"}
                 </Button>
               </DialogFooter>
             </form>
           </Form>
         </DialogContent>
       </Dialog>
-    
     </>
   )
 }

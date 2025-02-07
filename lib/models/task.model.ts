@@ -15,6 +15,10 @@ const taskSchema = new mongoose.Schema({
     ref: "Column",
     required: [true, "Column is required"],
   },
+  board: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Board",
+  },
   assignedTo: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -37,7 +41,18 @@ const taskSchema = new mongoose.Schema({
       ref: "Task",
     },
   ],
+  tasksLinkedToThis: [
+    {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Task",
+    }
+  ],
   createdAt: {
+    type: Date,
+    default: Date.now,
+    required: [true, "Creation date is required"],
+  },
+  updatedAt: {
     type: Date,
     default: Date.now,
     required: [true, "Creation date is required"],
@@ -62,16 +77,23 @@ const taskSchema = new mongoose.Schema({
     ref: "Team",
     required: [true, "Team is required"],
   },
+  location: {
+    type: String,
+    enum: ["Board", "Backlog"],
+    required: [true, "Task location ('Board' | 'Backlog') is required"],
+  }
 });
 
 type TaskType = InferSchemaType<typeof taskSchema> & { 
     _id: string, 
+    boardId: string,
     column: string, 
     team: string, 
     author: string, 
     parentId: string, 
     comment: string[], 
     linkedTasks: string[], 
+    tasksLinkedToThis: string[]
     assignedTo: string[] 
 };
 

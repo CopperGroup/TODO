@@ -167,7 +167,7 @@ const Column= ({
         }`}
       >
         {filteredCards.map((c) => {
-          return <Card key={c._id} {...c} handleDragStart={handleDragStart} />;
+          return <Card task={c} key={c._id} {...c} handleDragStart={handleDragStart} teamUsers={team.users} allTasks={cards} team={team}/>;
         })}
         <DropIndicator beforeId={null} column={column} />
         <AddCard 

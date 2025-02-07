@@ -24,22 +24,28 @@ export async function fetchBoardById({ boardId }: { boardId: string }, type?: 'j
     })
     .populate({
         path: 'tasks',
-    })
-    // .populate({
-    //   path: "team",
-    //   populate: {
-    //     path: "tasks", // Populate team tasks
-    //     // populate: {
-    //     //   path: "comments",
-    //     //   populate: {
-    //     //     path: "responses", // Replies to the task's comments
-    //     //     populate: {
-    //     //       path: "author", // Populate comment author
-    //     //     },
-    //     //   },
-    //     // },
-    //   },
-    // });
+        populate: [
+          {
+            path: 'author', // Populate author field in tasks
+          },
+          {
+            path: 'assignedTo', 
+          },
+          {
+            path: 'subTasks', // Populate subTasks in tasks
+            populate: [
+              { path: 'author' }, // Populate author of each subtask
+              { path: 'assignedTo' }, // Populate assignedTo in each subtask
+            ]
+          },
+          {
+            path: 'linkedTasks', // Populate author field in tasks
+          },
+          {
+            path: 'comments', // Populate comments in tasks
+            populate: { path: 'author' }, // Populate author of each comment
+          }
+    ]}).exec()
 
     if(type === 'json'){
       return JSON.stringify(board)

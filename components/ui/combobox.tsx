@@ -1,104 +1,88 @@
 "use client"
 
 import * as React from "react"
-import { CheckIcon, ChevronsUpDownIcon } from "lucide-react"
+import { Check, ChevronsUpDown } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { ToastAction } from "./toast"
-import { useToast } from "@/hooks/use-toast"
 
 interface ComboboxProps {
-  items: { label: string; value: string }[]
-  onSelect: (item: { label: string; value: string }) => void
-  placeholder?: string
-  allowCustomValue?: boolean
-  toastTitle?: string, 
-  toastDescription?: string,
-  className?: string
-  type?: "Email" | "String"
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  children: React.ReactNode
 }
 
-export function Combobox({ items, onSelect, placeholder, allowCustomValue = false, toastTitle, toastDescription, className, type = "String"}: ComboboxProps) {
-  const [open, setOpen] = React.useState(false)
-  const [inputValue, setInputValue] = React.useState("")
+const Combobox = React.forwardRef<HTMLDivElement, ComboboxProps>(({ open, onOpenChange, children }, ref) => (
+  <Popover open={open} onOpenChange={onOpenChange}>
+    <div ref={ref} className="relative">
+      {children}
+    </div>
+  </Popover>
+))
+Combobox.displayName = "Combobox"
 
-  const { toast } = useToast();
+const ComboboxTrigger = React.forwardRef<
+  React.ElementRef<typeof PopoverTrigger>,
+  React.ComponentPropsWithoutRef<typeof PopoverTrigger>
+>(({ className, children, ...props }, ref) => (
+  <PopoverTrigger asChild>
+    <Button
+      variant="outline"
+      role="combobox"
+      className={cn("w-full justify-between font-normal", className)}
+      ref={ref}
+      {...props}
+    >
+      {children}
+      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+    </Button>
+  </PopoverTrigger>
+))
+ComboboxTrigger.displayName = "ComboboxTrigger"
 
-  const handleSelect = (currentValue: string) => {
+const ComboboxContent = React.forwardRef<
+  React.ElementRef<typeof PopoverContent>,
+  React.ComponentPropsWithoutRef<typeof PopoverContent>
+>(({ className, children, ...props }, ref) => (
+  <PopoverContent className={cn("w-[200px] p-0", className)} ref={ref} {...props}>
+    <Command className="w-full">
+      <CommandList>{children}</CommandList>
+    </Command>
+  </PopoverContent>
+))
+ComboboxContent.displayName = "ComboboxContent"
 
-    if(type === "Email") {
-      if(isValidEmail(currentValue)) {
-        onSelect({ label: currentValue, value: currentValue })
-        setInputValue("")
-        setOpen(false)
-      } else {
-        toast({
-          variant: "destructive",
-          title: toastTitle || "Uh oh! Something went wrong.",
-          description: toastDescription || "There was a problem with your request.",
-          action: <ToastAction altText="Try again">Try again</ToastAction>,
-        })
-      }
-    } else {
-      onSelect({ label: currentValue, value: currentValue })
-      setInputValue("")
-      setOpen(false)
-    }
-  }
+const ComboboxInput = React.forwardRef<
+  React.ElementRef<typeof CommandInput>,
+  React.ComponentPropsWithoutRef<typeof CommandInput>
+>(({ className, ...props }, ref) => <CommandInput ref={ref} className={cn("w-full", className)} {...props} />)
+ComboboxInput.displayName = "ComboboxInput"
 
-  const isValidEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(email)
-  }
+const ComboboxList = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => <CommandGroup ref={ref} className={cn("w-full", className)} {...props} />,
+)
+ComboboxList.displayName = "ComboboxList"
 
-  const filteredItems = React.useMemo(() => {
-    const filtered = items.filter(
-      (item) =>
-        item.label.toLowerCase().includes(inputValue.toLowerCase()) ||
-        item.value.toLowerCase().includes(inputValue.toLowerCase()),
-    )
+const ComboboxItem = React.forwardRef<
+  React.ElementRef<typeof CommandItem>,
+  React.ComponentPropsWithoutRef<typeof CommandItem> & { selected?: boolean }
+>(({ className, children, selected, ...props }, ref) => (
+  <CommandItem ref={ref} className={cn("w-full cursor-pointer", className)} {...props}>
+    {children}
+    {selected && <Check className={cn("ml-auto h-4 w-4")} />}
+  </CommandItem>
+))
+ComboboxItem.displayName = "ComboboxItem"
 
-    if (allowCustomValue && isValidEmail(inputValue) && !filtered.some((item) => item.value === inputValue)) {
-      filtered.push({ label: inputValue, value: inputValue })
-    }
+const ComboboxEmpty = React.forwardRef<
+  React.ElementRef<typeof CommandEmpty>,
+  React.ComponentPropsWithoutRef<typeof CommandEmpty>
+>(({ className, ...props }, ref) => (
+  <CommandEmpty ref={ref} className={cn("w-full py-6 text-center text-sm", className)} {...props} />
+))
+ComboboxEmpty.displayName = "ComboboxEmpty"
 
-    return filtered
-  }, [items, inputValue, allowCustomValue, isValidEmail])
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="outline" role="combobox" aria-expanded={open} className={cn("w-full font-medium justify-between", className)}>
-          {inputValue || placeholder || "Select item..."}
-          <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-full p-0">
-        <Command>
-          <CommandInput placeholder="Search or enter email..." value={inputValue} onValueChange={setInputValue} />
-          <CommandList>
-            <CommandEmpty>No item found.</CommandEmpty>
-            <CommandGroup>
-              {filteredItems.map((item) => (
-                <CommandItem key={item.value} onSelect={() => handleSelect(item.value)}>
-                  <CheckIcon className={cn("mr-2 h-4 w-4", inputValue === item.value ? "opacity-100" : "opacity-0")} />
-                  {item.label}
-                </CommandItem>
-              ))}
-              {inputValue &&
-                <CommandItem onSelect={() => handleSelect(inputValue)}>
-                  <CheckIcon className={cn("mr-2 h-4 w-4 opacity-0")} />
-                  {inputValue}
-                </CommandItem>
-              }
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
-  )
-}
+export { Combobox, ComboboxTrigger, ComboboxContent, ComboboxInput, ComboboxList, ComboboxItem, ComboboxEmpty }
 

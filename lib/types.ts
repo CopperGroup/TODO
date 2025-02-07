@@ -65,9 +65,9 @@ export type PopulatedCommentType = {
   content: string;
   author: UserType; // Populated with User
   task: PopulatedTaskType; // Populated with Task
-  parentId: PopulatedCommentType | null; // Populated with Comment (if reply)
   attachments: string[];
-  responses: PopulatedCommentType[]; // Populated replies (nested)
+  createdAt: Date
+
 };
 
 // Task Type (Populated)
@@ -84,6 +84,11 @@ export type PopulatedTaskType = {
   attachments: string[];
   comments: PopulatedCommentType[]; // Populated Comments
   type?: string; // Optional task type
+  tasksLinkedToThis: PopulatedTaskType[];
+  board?: PopulatedBoardType;
+  team: PopulatedTeamType;
+  updatedAt: Date;
+  location: 'Board' | 'Backlog'
 };
 
 // Column Type (Populated)
@@ -109,5 +114,6 @@ export type UserType = {
   _id: string;
   name: string;
   email: string;
+  profilePicture: string;
   // Add other fields you have in the User model
 };

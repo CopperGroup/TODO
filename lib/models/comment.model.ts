@@ -7,27 +7,24 @@ const commentSchema = new mongoose.Schema({
     },
     author: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
+        ref: 'User',
+        required: [true, "Comment must have an author"],
     },
     task: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Task'
-    },
-    parentId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Comment'
+        ref: 'Task',
+        required: [true, "COmment must have a task"],
     },
     attachments: [
         {
             type: String,
         }
     ],
-    responses: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Comment'
-        }
-    ]
+    createdAt: {
+        type: Date,
+        default: Date.now,
+        required: [true, "Creation date is required"],
+    }
 })
 
 const Comment = mongoose.models.Comment || mongoose.model("Comment", commentSchema);

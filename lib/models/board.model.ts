@@ -7,7 +7,8 @@ const boardSchema = new mongoose.Schema({
     },
     team: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Team'
+        ref: 'Team',
+        required: [true, "Board must have a team"]
     },
     columns: [
         {

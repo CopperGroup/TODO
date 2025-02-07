@@ -9,6 +9,7 @@ import Column from "../models/column.model";
 import Task from "../models/task.model";
 import { PopulatedTeamType } from "../types";
 import { revalidatePath } from "next/cache";
+import Comment from "../models/comment.model";
 
 type createTeamParams = {
    name: string
@@ -60,7 +61,7 @@ export async function createTeam({ name, usersEmails, adminClerkId }: createTeam
     await admin.save()
 
     const firstBoard = await Board.create({
-        name: 'Kan',
+        name: 'Kolos 1',
         team: createdTeam._id,
     })
 
@@ -94,20 +95,32 @@ export async function createTeam({ name, usersEmails, adminClerkId }: createTeam
 
         const exampleTask = {
             description: "Meet Copper Group Kolos board",
+            board: firstBoard._id,
             author: admin._id,
             column: TODOColumn._id,
-            assignedTo: [admin._id],  // Assigning the task to the author for simplicity
-            parentId: null,  // This is a top-level task, no parent
-            subTasks: [],  // No subtasks for this example
-            linkedTasks: [],  // No linked tasks for this example
-            commets: [],  // Assuming no comments for this task yet
+            assignedTo: [admin._id],
+            parentId: null,
+            subTasks: [],
+            linkedTasks: [], 
+            commets: [],
             team: createdTeam._id,
-            type: "Issue"
+            type: "Issue",
+            location: 'Board'
         };
 
         const firstTask = await Task.create(exampleTask)
 
         if(firstTask) {
+          const firstComment = await Comment.create({
+            content: "Move to DONE, when finished😉",
+            author: admin._id,
+            task: firstTask._id,
+          })
+
+          firstTask.comments.push(firstComment._id)
+
+          await firstTask.save();
+          
           firstBoard.tasks.push(firstTask._id)
           createdTeam.tasks.push(firstTask._id)
         }
