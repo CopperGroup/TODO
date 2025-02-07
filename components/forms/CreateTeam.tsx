@@ -172,7 +172,7 @@ export default function CreateTeamForm() {
                           className="flex items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-800"
                         >
                           <PlusCircle className="mr-2 h-4 w-4" />
-                          <span>Add "{inputValue}"</span>
+                          <span>Add &quot;{inputValue}&quot;</span>
                         </ComboboxItem>
                       )}
                     </ComboboxList>

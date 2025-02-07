@@ -123,7 +123,7 @@ const AddSubtask: React.FC<AddSubtaskProps> = ({ onSubtaskAdd, parentTaskId, tea
                       className="flex items-center p-2 hover:bg-gray-100 dark:hover:bg-gray-800"
                     >
                       <FiUser className="mr-2 h-4 w-4" />
-                      <span>Invite "{assigneeInput}"</span>
+                      <span>Invite &quot;{assigneeInput}&quot;</span>
                     </ComboboxItem>
                   )}
                 </ComboboxList>
