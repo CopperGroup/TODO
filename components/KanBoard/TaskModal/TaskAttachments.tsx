@@ -67,7 +67,7 @@ const TaskAttachments: React.FC<TaskAttachmentsProps> = ({ attachments, onAttach
                     {isDragActive ? (
                     <p className="text-zinc-300">Drop the files here ...</p>
                     ) : (
-                    <p className="text-zinc-300">Drag 'n' drop some files here, or click to select files</p>
+                    <p className="text-zinc-300">Drag &apos;n&apos; drop some files here, or click to select files</p>
                     )}
                 </div>
                 )}
