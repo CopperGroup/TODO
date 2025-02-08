@@ -68,6 +68,11 @@ const taskSchema = new mongoose.Schema({
       ref: "Comment",
     },
   ],
+  labels: [
+    {
+        type: String,
+    }
+  ],
   type: {
     type: String,
     required: [true, "Task type is required"],

@@ -17,7 +17,7 @@ export default async function Page({ params }: { params: { boardId: string } }) 
   const stringifiedBoard = await fetchBoardById({ boardId: params.boardId }, 'json');
 
   return (
-    <section className="h-screen w-full bg-neutral-900 text-neutral-50">
+    <section className="h-full min-h-screen w-full bg-neutral-900 text-neutral-50">
       <Board stringifiedBoard={stringifiedBoard} />
     </section>
   );

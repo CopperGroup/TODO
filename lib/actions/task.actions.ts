@@ -8,6 +8,7 @@ import Task, { TaskType } from "../models/task.model";
 import Team from "../models/team.model";
 import User from "../models/user.model";
 import { connectToDB } from "../mongoose";
+import { PopulatedTaskType } from "../types";
 
 export async function updateTaskColumn({ taskId, columnId }: { taskId: string, columnId: string }) {
     try {
@@ -23,14 +24,14 @@ export async function updateTaskColumn({ taskId, columnId }: { taskId: string, c
       )
     
   } catch (error: any) {
-    throw new Error(`${error.message}`)
+    throw new Error(`Erorr updating tasks column ${error.message}`)
   }
 }
 
-export async function createNewTask({ clerkId, teamId, boardId, columnId, decription, taskType, location }: { clerkId: string | undefined, teamId: string, boardId: string, columnId: string, decription: string, taskType: string, location?: "Board" | "Backlog" }): Promise<TaskType>;
-export async function createNewTask({ clerkId, teamId, boardId, columnId, decription, taskType, location }: { clerkId: string | undefined, teamId: string, boardId: string, columnId: string, decription: string, taskType: string, location?: "Board" | "Backlog" }, type: 'json'): Promise<string>;
+export async function createNewTask({ clerkId, teamId, boardId, columnId, description, taskType, location }: { clerkId: string | undefined, teamId: string, boardId: string, columnId: string, description: string, taskType: string, location?: "Board" | "Backlog" }): Promise<TaskType>;
+export async function createNewTask({ clerkId, teamId, boardId, columnId, description, taskType, location }: { clerkId: string | undefined, teamId: string, boardId: string, columnId: string, description: string, taskType: string, location?: "Board" | "Backlog" }, type: 'json'): Promise<string>;
 
-export async function createNewTask({ clerkId, teamId, boardId, columnId, decription, taskType, location = "Board" }: { clerkId: string | undefined, teamId: string, boardId: string, columnId: string, decription: string, taskType: string, location?: "Board" | "Backlog" }, type?: 'json') {
+export async function createNewTask({ clerkId, teamId, boardId, columnId, description, taskType, location = "Board" }: { clerkId: string | undefined, teamId: string, boardId: string, columnId: string, description: string, taskType: string, location?: "Board" | "Backlog" }, type?: 'json') {
     try {
         connectToDB()
 
@@ -41,7 +42,7 @@ export async function createNewTask({ clerkId, teamId, boardId, columnId, decrip
         }
 
         const task = await Task.create({
-          description: decription,
+          description: description,
           author: author._id,
           column: columnId,
           type: taskType,
@@ -50,19 +51,36 @@ export async function createNewTask({ clerkId, teamId, boardId, columnId, decrip
           location
         });
     
-        // Push task ID to the related column
-        await Column.findByIdAndUpdate(columnId, { $push: { tasks: task._id } });
-    
         // Push task ID to the related board
         await Board.findByIdAndUpdate(boardId, { $push: { tasks: task._id } });
     
         // Push task ID to the related team
         await Team.findByIdAndUpdate(teamId, { $push: { tasks: task._id } });
     
+        const populatedTask = await Task.findById(task._id)
+            .populate([
+                { path: 'author' },
+                { path: 'assignedTo' },
+                {
+                path: 'subTasks',
+                populate: [
+                    { path: 'author' },
+                    { path: 'assignedTo' },
+                ],
+                },
+                { path: 'linkedTasks' },
+                {
+                path: 'comments',
+                options: { sort: { createdAt: -1 } },
+                populate: { path: 'author' },
+                },
+            ])
+            .exec();
+        
         if (type === "json") {
-          return JSON.stringify(task);
+          return JSON.stringify(populatedTask);
         } else {
-          return task;
+          return populatedTask;
         }
    } catch (error: any) {
      throw new Error(`Failed to create task ${error.message}`)
@@ -120,4 +138,184 @@ export async function deleteTasks(tasks: DeleteTaskArgs) {
     session.endSession();
     throw new Error(`Failed to delete tasks: ${error.message}`);
   }
+}
+
+
+export async function updateTaskDescription({ taskId, prevDescription, newDescription }: { taskId: string, prevDescription: string, newDescription: string }): Promise<PopulatedTaskType>;
+export async function updateTaskDescription({ taskId, prevDescription, newDescription }: { taskId: string, prevDescription: string, newDescription: string }, type: 'json'): Promise<string>;
+
+export async function updateTaskDescription({ taskId, prevDescription, newDescription }: { taskId: string, prevDescription: string, newDescription: string }, type?: 'json') {
+   try {
+      
+    connectToDB();
+
+    const task = await Task.findByIdAndUpdate(
+        taskId, 
+        { description: newDescription }, 
+        { new: true }
+    ).populate([
+        { path: 'author' },
+        { path: 'assignedTo' },
+        {
+          path: 'subTasks',
+          populate: [
+            { path: 'author' },
+            { path: 'assignedTo' },
+          ],
+        },
+        { path: 'linkedTasks' },
+        {
+          path: 'comments',
+          options: { sort: { createdAt: -1 } },
+          populate: { path: 'author' },
+        },
+      ]).exec()
+      
+    if(type === 'json'){
+      return JSON.stringify(task)
+    } else {
+      return task
+    }
+   } catch (error: any) {
+     throw new Error(`Eror updating task description ${error.message}`)
+   }
+}
+
+export async function createNewTaskSubtask({ parentId, clerkId, teamId, boardId, columnId, description, taskType, assigneesIds, location }: { parentId: string, clerkId: string | undefined, teamId: string, boardId: string, columnId: string, description: string, taskType: string, assigneesIds?: string[], location?: "Board" | "Backlog" }): Promise<TaskType>;
+export async function createNewTaskSubtask({ parentId, clerkId, teamId, boardId, columnId, description, taskType, assigneesIds, location }: { parentId: string, clerkId: string | undefined, teamId: string, boardId: string, columnId: string, description: string, taskType: string, assigneesIds?: string[], location?: "Board" | "Backlog" }, type: 'json'): Promise<string>;
+
+export async function createNewTaskSubtask({ parentId, clerkId, teamId, boardId, columnId, description, taskType, assigneesIds, location = "Board" }: { parentId: string, clerkId: string | undefined, teamId: string, boardId: string, columnId: string, description: string, taskType: string, assigneesIds?: string[], location?: "Board" | "Backlog" }, type?: 'json') {
+    try {
+        connectToDB()
+
+        const author = await User.findOne({ clerkId });
+
+        if(!author) {
+            throw new Error("No author found")
+        }
+
+        const parentTask = await Task.findById(parentId);
+
+        if(parentTask.parentId) {
+            throw new Error('Creating subtask on a subtask is not yet available')
+        }
+
+        const task = await Task.create({
+          description: description,
+          author: author._id,
+          column: columnId,
+          type: taskType,
+          team: teamId,
+          board: boardId,
+          parentId: parentId,
+          assignedTo: assigneesIds || [],
+          location
+        });
+    
+
+        parentTask.subTasks.push(task._id);
+        await parentTask.save();
+
+        // Push task ID to the related board
+        await Board.findByIdAndUpdate(boardId, { $push: { tasks: task._id } });
+    
+        // Push task ID to the related team
+        await Team.findByIdAndUpdate(teamId, { $push: { tasks: task._id } });
+    
+        if (type === "json") {
+          return JSON.stringify(task);
+        } else {
+          return task;
+        }
+   } catch (error: any) {
+     throw new Error(`Failed to create task ${error.message}`)
+   }
+}
+
+export async function assignTask({ assigneesIds, taskId }: { assigneesIds: string[], taskId: string }): Promise<PopulatedTaskType>;
+export async function assignTask({ assigneesIds, taskId }: { assigneesIds: string[], taskId: string }, type: 'json'): Promise<string>;
+
+export async function assignTask({ assigneesIds, taskId }: { assigneesIds: string[], taskId: string }, type?: 'json') {
+   try {
+    connectToDB()
+
+    const users = await User.find({ '_id': { $in: assigneesIds } }).exec();
+    if (users.length !== assigneesIds.length) {
+      throw new Error("One or more users do not exist.");
+    }
+
+    const task = await Task.findByIdAndUpdate(
+        taskId, 
+        {
+            assignedTo: assigneesIds
+        },
+        { new: true }
+    ).populate([
+        { path: 'author' },
+        { path: 'assignedTo' },
+        {
+          path: 'subTasks',
+          populate: [
+            { path: 'author' },
+            { path: 'assignedTo' },
+          ],
+        },
+        { path: 'linkedTasks' },
+        {
+          path: 'comments',
+          options: { sort: { createdAt: -1 } },
+          populate: { path: 'author' },
+        },
+      ]).exec();
+
+
+    if(type === 'json'){
+      return JSON.stringify(task)
+    } else {
+      return task
+    }
+   } catch (error: any) {
+     throw new Error(`${error.message}`)
+   }
+}
+
+export async function updateTaskLabels({ taskId, labels }: { taskId: string, labels: string[] }): Promise<PopulatedTaskType>;
+export async function updateTaskLabels({ taskId, labels }: { taskId: string, labels: string[] }, type: 'json'): Promise<string>;
+
+export async function updateTaskLabels({ taskId, labels }: { taskId: string, labels: string[] }, type?: 'json') {
+   try {
+    connectToDB();
+
+    const task = await Task.findByIdAndUpdate(
+        taskId,
+        {
+            labels
+        },
+        { new: true }
+    ).populate([
+        { path: 'author' },
+        { path: 'assignedTo' },
+        {
+          path: 'subTasks',
+          populate: [
+            { path: 'author' },
+            { path: 'assignedTo' },
+          ],
+        },
+        { path: 'linkedTasks' },
+        {
+          path: 'comments',
+          options: { sort: { createdAt: -1 } },
+          populate: { path: 'author' },
+        },
+      ]).exec()
+    
+    if(type === 'json'){
+      return JSON.stringify(task)
+    } else {
+      return task
+    }
+   } catch (error: any) {
+     throw new Error(`${error.message}`)
+   }
 }

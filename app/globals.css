@@ -109,6 +109,33 @@
         border-radius: 8px; /* Adjust border radius to match the element */
     }
 
+    .coppergroup-gradient:hover {
+      background: linear-gradient(45deg, 
+        rgba(102, 46, 0, 1) 0%, 
+        rgba(212, 120, 0, 0.9) 25%, 
+        rgba(255, 179, 102, 0.7) 50%, 
+        rgba(212, 120, 0, 0.9) 75%, 
+        rgba(102, 46, 0, 1) 100%);
+      background: -webkit-radial-gradient(45deg, 
+        rgba(102, 46, 0, 1) 0%, 
+        rgba(212, 120, 0, 0.9) 25%, 
+        rgba(255, 179, 102, 0.7) 50%, 
+        rgba(212, 120, 0, 0.9) 75%, 
+        rgba(102, 46, 0, 1) 100%);
+      background: -moz-radial-gradient(45deg, 
+        rgba(102, 46, 0, 1) 0%, 
+        rgba(212, 120, 0, 0.9) 25%, 
+        rgba(255, 179, 102, 0.7) 50%, 
+        rgba(212, 120, 0, 0.9) 75%, 
+        rgba(102, 46, 0, 1) 100%);
+      background: -o-radial-gradient(45deg, 
+        rgba(102, 46, 0, 1) 0%, 
+        rgba(212, 120, 0, 0.9) 25%, 
+        rgba(255, 179, 102, 0.7) 50%, 
+        rgba(212, 120, 0, 0.9) 75%, 
+        rgba(102, 46, 0, 1) 100%);
+    }
+
     .custom-scrollbar::-webkit-scrollbar {
         width: 3px;
         height: 3px;

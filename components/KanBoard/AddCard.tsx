@@ -9,19 +9,17 @@ import { createNewTask } from "@/lib/actions/task.actions";
 import { useUser } from "@clerk/nextjs";
 import { TaskType } from "@/lib/models/task.model";
 
-const AddCard = ({ columnId, teamId, boardId, setCards }: { columnId: string; teamId: string, boardId: string, setCards: React.Dispatch<React.SetStateAction<TaskType[]>> }) => {
+const AddCard = ({ columnId, teamId, boardId, currentUserClerkId, setCards }: { columnId: string, currentUserClerkId: string, teamId: string, boardId: string, setCards: React.Dispatch<React.SetStateAction<TaskType[]>>, }) => {
     const [text, setText] = useState("");
     const [adding, setAdding] = useState(false);
     const [cardType, setCardType] = useState<"Issue" | "Bug">("Issue");
-  
-    const { user } = useUser();
 
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
   
       if (!text.trim().length) return;
   
-      const result = await createNewTask({ clerkId: user?.id, teamId, columnId, boardId, decription: text.trim(), taskType: cardType }, 'json')
+      const result = await createNewTask({ clerkId: currentUserClerkId, teamId, columnId, boardId, description: text.trim(), taskType: cardType }, 'json')
 
       const createdTask: TaskType = JSON.parse(result);
   

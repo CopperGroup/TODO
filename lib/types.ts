@@ -75,17 +75,18 @@ export type PopulatedTaskType = {
   _id: string;
   description: string;
   author: UserType; // Populated with User
-  column: PopulatedColumnType; // Populated with Column
+  column: PopulatedColumnType | string; // Populated with Column
   assignedTo: UserType[]; // Populated Users
-  parentId: PopulatedTaskType | null; // Populated Task (if parent)
+  parentId: PopulatedTaskType | null | string; // Populated Task (if parent)
   subTasks: PopulatedTaskType[]; // Populated SubTasks
   linkedTasks: PopulatedTaskType[]; // Populated Linked Tasks
   createdAt: Date;
+  labels: string[];
   attachments: string[];
   comments: PopulatedCommentType[]; // Populated Comments
   type?: string; // Optional task type
   tasksLinkedToThis: PopulatedTaskType[];
-  board?: PopulatedBoardType;
+  board?: PopulatedBoardType | string;
   team: PopulatedTeamType;
   updatedAt: Date;
   location: 'Board' | 'Backlog'

@@ -38,8 +38,8 @@ const LinkedTaskSelectionCombobox: React.FC<LinkedTaskSelectionComboboxProps> = 
 
   return (
     <Combobox open={comboboxOpen} onOpenChange={setComboboxOpen}>
-      <ComboboxTrigger className="w-full">{linkedTaskInput || "Search for tasks..."}</ComboboxTrigger>
-      <ComboboxContent className="w-[400px] p-0">
+      <ComboboxTrigger className="w-full bg-zinc-800/50 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 border p-2 hover:bg-zinc-700/30 hover:text-gray-100">{linkedTaskInput || "Search for tasks..."}</ComboboxTrigger>
+      <ComboboxContent className="w-full p-0">
         <ComboboxInput
           placeholder="Search for tasks..."
           value={linkedTaskInput}

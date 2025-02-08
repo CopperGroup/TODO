@@ -7,43 +7,8 @@ import { Column as ColumnType, PopulatedBoardType, PopulatedColumnType, Populate
 import VerticalIndicator from "./VerticalIndicator";
 import { AddColumn } from "./AddColumn";
 import { motion } from "framer-motion"
-
-const DEFAULT_CARDS = [
-  // BACKLOG
-  { title: "Look into render bug in dashboard", id: "1", column: "backlog" },
-  { title: "SOX compliance checklist", id: "2", column: "backlog" },
-  { title: "[SPIKE] Migrate to Azure", id: "3", column: "backlog" },
-  { title: "Document Notifications service", id: "4", column: "backlog" },
-  // TODO
-  {
-    title: "Research DB options for new microservice",
-    id: "5",
-    column: "todo",
-  },
-  { title: "Postmortem for outage", id: "6", column: "todo" },
-  { title: "Sync with product on Q3 roadmap", id: "7", column: "todo" },
-
-  // DOING
-  {
-    title: "Refactor context providers to use Zustand",
-    id: "8",
-    column: "doing",
-  },
-  { title: "Add logging to daily CRON", id: "9", column: "doing" },
-  // DONE
-  {
-    title: "Set up DD dashboards for Lambda listener",
-    id: "10",
-    column: "done",
-  },
-];
-
-const DEFAULT_COLUMNS = [
-  { _id: "backlog", name: "Backlog", textColor: "text-neutral-500" },
-  { _id: "todo", name: "TODO", textColor: "text-yellow-200" },
-  { _id: "doing", name: "In Progress", textColor: "text-blue-200" },
-  { _id: "done", name: "Complete", textColor: "text-emerald-200" },
-];
+import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 function debounce(func: Function, wait: number) {
   let timeout: NodeJS.Timeout
@@ -67,6 +32,14 @@ type BoardType = (PopulatedBoardType & { tasks: TaskType[]})
 
 const Board = ({ stringifiedBoard }: { stringifiedBoard: string }) => {
   const board: BoardType = JSON.parse(stringifiedBoard)
+
+  const { user, isLoaded } = useUser();
+
+  const router = useRouter();
+  
+  if(isLoaded && !user) {
+    router.push("/")
+  }
 
   const [ cards, setCards ] = useState(board.tasks);
   const [ columns, setColumns ] = useState<PopulatedColumnType[]>(board.columns);
@@ -238,6 +211,7 @@ const Board = ({ stringifiedBoard }: { stringifiedBoard: string }) => {
               <Column
                 boardId={board._id}
                 title={col.name}
+                columns={board.columns}
                 // @ts-ignore
                 team={board.team}
                 column={col._id}
@@ -247,6 +221,7 @@ const Board = ({ stringifiedBoard }: { stringifiedBoard: string }) => {
                 setIsDraggingColumn={setIsDraggingColumn}
                 handleColumnDragStart={handleColumnDragStart}
                 setCards={setCards}
+                currentUser={{ clerkId: user?.id as string, email: user?.primaryEmailAddress?.emailAddress as string }}
               />
               <VerticalIndicator beforeId={col._id}/>
             </React.Fragment>

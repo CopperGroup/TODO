@@ -12,7 +12,7 @@ export async function fetchBoardById({ boardId }: { boardId: string }, type?: 'j
    try {
     connectToDB();
 
-    const board = await Board.findById(boardId)
+    let board = await Board.findById(boardId)
     .populate({
       path: "columns",
     })
@@ -44,8 +44,11 @@ export async function fetchBoardById({ boardId }: { boardId: string }, type?: 'j
           {
             path: 'comments', // Populate comments in tasks
             populate: { path: 'author' }, // Populate author of each comment
-          }
+            options: { sort: { createdAt: -1 } }
+          },
     ]}).exec()
+
+    board.tasks = board.tasks.filter((task: any) => !task.parentId);
 
     if(type === 'json'){
       return JSON.stringify(board)

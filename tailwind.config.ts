@@ -19,18 +19,18 @@ const config: Config = {
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		colors: {
-			copper: {
-				50: "var(--copper-50)",
-				100: "var(--copper-100)",
-				200: "var(--copper-200)",
-				300: "var(--copper-300)",
-				400: "var(--copper-400)",
-				500: "var(--copper-500)",
-				600: "var(--copper-600)",
-				700: "var(--copper-700)",
-				800: "var(--copper-800)",
-				900: "var(--copper-900)",
-			},
+  			copper: {
+  				'50': 'var(--copper-50)',
+  				'100': 'var(--copper-100)',
+  				'200': 'var(--copper-200)',
+  				'300': 'var(--copper-300)',
+  				'400': 'var(--copper-400)',
+  				'500': 'var(--copper-500)',
+  				'600': 'var(--copper-600)',
+  				'700': 'var(--copper-700)',
+  				'800': 'var(--copper-800)',
+  				'900': 'var(--copper-900)'
+  			},
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
@@ -81,6 +81,28 @@ const config: Config = {
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
   			}
+  		},
+  		keyframes: {
+  			'accordion-down': {
+  				from: {
+  					height: '0'
+  				},
+  				to: {
+  					height: 'var(--radix-accordion-content-height)'
+  				}
+  			},
+  			'accordion-up': {
+  				from: {
+  					height: 'var(--radix-accordion-content-height)'
+  				},
+  				to: {
+  					height: '0'
+  				}
+  			}
+  		},
+  		animation: {
+  			'accordion-down': 'accordion-down 0.2s ease-out',
+  			'accordion-up': 'accordion-up 0.2s ease-out'
   		}
   	}
   },

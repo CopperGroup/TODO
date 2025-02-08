@@ -1,4 +1,4 @@
-import { Card as CardType, PopulatedTaskType } from "@/lib/types";
+import { Card as CardType, PopulatedColumnType, PopulatedTaskType } from "@/lib/types";
 import React, { useState } from "react";
 import DropIndicator from "./Indicators";
 import Card from "./Card";
@@ -7,6 +7,7 @@ import { changeTasksColumn } from "@/lib/actions/board.actions";
 import { updateTaskColumn } from "@/lib/actions/task.actions";
 import { TeamType } from "@/lib/models/team.model";
 import { UserType } from "@/lib/models/user.model";
+import { motion } from "framer-motion"
 
 const Column= ({ 
   boardId,
@@ -18,10 +19,9 @@ const Column= ({
   handleColumnDragStart, 
   isDraggingColumn,
   team,
+  columns,
+  currentUser,
   setIsDraggingColumn,
-  // handleColumnDragOver,
-  // handleColumnDragEnd,
-  // handleColumnDragLeave,
 }: { 
   boardId: string,
   title: string, 
@@ -30,12 +30,11 @@ const Column= ({
   team: TeamType & { users: { user: UserType, role: "Admin" | "Member"}},
   cards: any[], 
   setCards: any, 
-  handleColumnDragStart: any, 
+  handleColumnDragStart: any,
+  currentUser: { clerkId: string, email: string } 
   isDraggingColumn: boolean,
+  columns: PopulatedColumnType[],
   setIsDraggingColumn: React.Dispatch<React.SetStateAction<boolean>>,
-  // handleColumnDragOver: (e: any) => void,
-  // handleColumnDragEnd: (e: any) => void,
-  // handleColumnDragLeave: (e: any) => void,
 }) => {
   const [active, setActive] = useState(false);
 
@@ -146,7 +145,10 @@ const Column= ({
   const filteredCards = cards.filter((c) => c.column === column);
 
   return (
-    <div className="w-56 shrink-0"           
+    <motion.div
+     className="w-56 shrink-0"    
+     layout
+     layoutId={column}
     >
       <div 
         className="mb-3 flex items-center justify-between  cursor-grab active:cursor-grabbing focus:cursor-grabbing"  
@@ -167,17 +169,30 @@ const Column= ({
         }`}
       >
         {filteredCards.map((c) => {
-          return <Card task={c} key={c._id} {...c} handleDragStart={handleDragStart} teamUsers={team.users} allTasks={cards} team={team}/>;
+          return (
+            <Card 
+              task={c} 
+              key={c._id} 
+              {...c} 
+              handleDragStart={handleDragStart} 
+              teamUsers={team.users} 
+              allTasks={cards} 
+              team={team} 
+              currentUser={currentUser}
+              columns={columns}
+            />
+          );
         })}
         <DropIndicator beforeId={null} column={column} />
         <AddCard 
+          currentUserClerkId={currentUser.clerkId}
           columnId={column} 
           setCards={setCards} 
           boardId={boardId}
           teamId={team._id}
         />
       </div>
-    </div>
+    </motion.div>
   );
 } 
 
