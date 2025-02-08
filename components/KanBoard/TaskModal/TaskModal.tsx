@@ -19,7 +19,7 @@ import LinkedTaskItem from "./LinkedTaskItem"
 import AddLabel from "./AddLabel"
 import LinkedTaskSelectionCombobox from "./LinkedTaskSelectionCombobox"
 import TaskAttachments from "./TaskAttachments"
-import { assignTask, updateTaskColumn, updateTaskDescription, updateTaskLabels } from "@/lib/actions/task.actions"
+import { addAttachmentsToTask, assignTask, updateTaskColumn, updateTaskDescription, updateTaskLabels } from "@/lib/actions/task.actions"
 import SubtaskList from "./SubTaskList"
 import { createComment } from "@/lib/actions/comment.actions"
 
@@ -128,7 +128,6 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onUpdate, 
       }))
       setIsAddingLabel(false)
       onUpdate(localTask)
-
       await updateTaskLabels({ taskId: task._id, labels: localTask.labels ? localTask.labels.concat([label.trim()]) : [label.trim()]}, 'json')
     }
   }
@@ -138,16 +137,18 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onUpdate, 
       ...prev,
       labels: [...(prev.labels.filter(l => l !== label))],
     }))
-
+    onUpdate(localTask)
     await updateTaskLabels({ taskId: task._id, labels: localTask.labels.filter(l => l !== label)}, 'json')
+
   }
 
-  const handleAttachmentAdd = (files: File[]) => {
-    const newAttachments = files.map(file => URL.createObjectURL(file))
+  const handleAttachmentAdd = async (attachments: string[]) => {
     setLocalTask(prev => ({
       ...prev,
-      attachments: [...prev.attachments, ...newAttachments]
+      attachments: [...prev.attachments, ...attachments]
     }))
+
+    await addAttachmentsToTask({ taskId: task._id, attachmentsLinks: attachments}, 'json')
   }
   
   const handleAttachmentRemove = (index: number) => {

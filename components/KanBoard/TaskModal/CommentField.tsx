@@ -4,10 +4,11 @@ import { useState, useRef, useEffect } from "react"
 import { useEditor, EditorContent } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Link from "@tiptap/extension-link"
+import Image from "@tiptap/extension-image"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Input } from "@/components/ui/input"
-import { Bold, Italic, LinkIcon, List, ListOrdered, ImageIcon, Code, X } from "lucide-react"
+import { Bold, Italic, LinkIcon, List, ListOrdered, ImageIcon, Code, X, Paperclip } from 'lucide-react'
 
 interface CommentFieldProps {
   onCommentAdd: (newComment: string, attachments?: File[]) => void
@@ -17,6 +18,7 @@ export default function CommentField({ onCommentAdd }: CommentFieldProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [attachments, setAttachments] = useState<File[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const imageInputRef = useRef<HTMLInputElement>(null)
 
   const editor = useEditor({
     extensions: [
@@ -25,6 +27,11 @@ export default function CommentField({ onCommentAdd }: CommentFieldProps) {
         openOnClick: false,
         HTMLAttributes: {
           class: "text-blue-500 underline",
+        },
+      }),
+      Image.configure({
+        HTMLAttributes: {
+          class: 'max-w-full h-auto',
         },
       }),
     ],
@@ -61,6 +68,19 @@ export default function CommentField({ onCommentAdd }: CommentFieldProps) {
     setAttachments((prev) => [...prev, ...files])
   }
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    files.forEach((file) => {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        if (e.target?.result && editor) {
+          editor.chain().focus().setImage({ src: e.target.result as string }).run()
+        }
+      }
+      reader.readAsDataURL(file)
+    })
+  }
+
   const toolbarActions = [
     { icon: Bold, tooltip: "Bold", action: () => editor?.chain().focus().toggleBold().run() },
     { icon: Italic, tooltip: "Italic", action: () => editor?.chain().focus().toggleItalic().run() },
@@ -79,7 +99,8 @@ export default function CommentField({ onCommentAdd }: CommentFieldProps) {
     { icon: List, tooltip: "Bullet list", action: () => editor?.chain().focus().toggleBulletList().run() },
     { icon: ListOrdered, tooltip: "Numbered list", action: () => editor?.chain().focus().toggleOrderedList().run() },
     { icon: Code, tooltip: "Code block", action: () => editor?.chain().focus().toggleCodeBlock().run() },
-    { icon: ImageIcon, tooltip: "Upload file", action: () => fileInputRef.current?.click() },
+    { icon: ImageIcon, tooltip: "Insert image", action: () => imageInputRef.current?.click() },
+    { icon: Paperclip, tooltip: "Attach file", action: () => fileInputRef.current?.click() },
   ]
 
   const removeAttachment = (index: number) => {
@@ -154,13 +175,26 @@ export default function CommentField({ onCommentAdd }: CommentFieldProps) {
             </div>
           </div>
 
-          <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileUpload} multiple />
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            className="hidden" 
+            onChange={handleFileUpload} 
+            multiple 
+          />
+          <input 
+            type="file" 
+            ref={imageInputRef} 
+            className="hidden" 
+            onChange={handleImageUpload} 
+            accept="image/*" 
+          />
 
           <div className="flex justify-end pt-2">
             <Button
               type="button"
               variant="ghost"
-              className="mr-2 text-gray-400 hover:text-gray-300"
+              className="mr-2 text-gray-400 hover:text-gray-100 hover:bg-transparent"
               onClick={() => setIsExpanded(false)}
             >
               Cancel
@@ -174,4 +208,3 @@ export default function CommentField({ onCommentAdd }: CommentFieldProps) {
     </div>
   )
 }
-

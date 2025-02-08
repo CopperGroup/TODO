@@ -275,7 +275,7 @@ export async function assignTask({ assigneesIds, taskId }: { assigneesIds: strin
       return task
     }
    } catch (error: any) {
-     throw new Error(`${error.message}`)
+     throw new Error(`Error assigning users to taskv${error.message}`)
    }
 }
 
@@ -310,6 +310,47 @@ export async function updateTaskLabels({ taskId, labels }: { taskId: string, lab
         },
       ]).exec()
     
+    if(type === 'json'){
+      return JSON.stringify(task)
+    } else {
+      return task
+    }
+   } catch (error: any) {
+     throw new Error(`${error.message}`)
+   }
+}
+
+export async function addAttachmentsToTask({ taskId, attachmentsLinks }: { taskId: string, attachmentsLinks: string[] }): Promise<PopulatedTaskType>;
+export async function addAttachmentsToTask({ taskId, attachmentsLinks }: { taskId: string, attachmentsLinks: string[] }, type: 'json'): Promise<string>;
+
+export async function addAttachmentsToTask({ taskId, attachmentsLinks }: { taskId: string, attachmentsLinks: string[] }, type?: 'json') {
+   try {
+    connectToDB();
+
+    const task = await Task.findByIdAndUpdate(
+        taskId,
+        {
+            attachments: attachmentsLinks 
+        },
+        { new: true }
+    ).populate([
+        { path: 'author' },
+        { path: 'assignedTo' },
+        {
+          path: 'subTasks',
+          populate: [
+            { path: 'author' },
+            { path: 'assignedTo' },
+          ],
+        },
+        { path: 'linkedTasks' },
+        {
+          path: 'comments',
+          options: { sort: { createdAt: -1 } },
+          populate: { path: 'author' },
+        },
+      ]).exec()
+
     if(type === 'json'){
       return JSON.stringify(task)
     } else {
