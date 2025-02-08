@@ -393,4 +393,29 @@
     }
 }
 
+.image-resizer {
+  position: relative;
+  display: inline-block;
+}
+
+.image-resizer img {
+  display: block;
+}
+
+.resize-handle {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  width: 10px;
+  height: 10px;
+  background-color: white;
+  border: 1px solid #000;
+  border-radius: 50%;
+  cursor: se-resize;
+}
+
+.ProseMirror img {
+  transition: all 0.1s ease-in-out;
+}
+
 

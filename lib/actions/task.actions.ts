@@ -330,7 +330,7 @@ export async function addAttachmentsToTask({ taskId, attachmentsLinks }: { taskI
     const task = await Task.findByIdAndUpdate(
         taskId,
         {
-            attachments: attachmentsLinks 
+            $push: { attachments: attachmentsLinks } 
         },
         { new: true }
     ).populate([
@@ -359,4 +359,48 @@ export async function addAttachmentsToTask({ taskId, attachmentsLinks }: { taskI
    } catch (error: any) {
      throw new Error(`${error.message}`)
    }
+}
+
+export async function removeAttachmentsFromTask({ taskId, attachmentLinks }: { taskId: string, attachmentLinks: string[] }): Promise<PopulatedTaskType>;
+export async function removeAttachmentsFromTask({ taskId, attachmentLinks }: { taskId: string, attachmentLinks: string[] }, type: 'json'): Promise<string>;
+
+export async function removeAttachmentsFromTask({ taskId, attachmentLinks }: { taskId: string, attachmentLinks: string[] }, type?: 'json') {
+  try {
+    // Ensure the DB connection
+    await connectToDB();
+
+    // Perform the update to remove attachments from the task
+    const task = await Task.findByIdAndUpdate(
+      taskId,
+      {
+        $pullAll: { attachments: attachmentLinks },
+      },
+      { new: true }
+    ).populate([
+      { path: 'author' },
+      { path: 'assignedTo' },
+      {
+        path: 'subTasks',
+        populate: [
+          { path: 'author' },
+          { path: 'assignedTo' },
+        ],
+      },
+      { path: 'linkedTasks' },
+      {
+        path: 'comments',
+        options: { sort: { createdAt: -1 } },
+        populate: { path: 'author' },
+      },
+    ]).exec();
+
+    // If type is 'json', return the stringified task; otherwise, return the populated task
+    if (type === 'json') {
+      return JSON.stringify(task);
+    } else {
+      return task;
+    }
+  } catch (error: any) {
+    throw new Error(`Error removing attachments: ${error.message}`);
+  }
 }

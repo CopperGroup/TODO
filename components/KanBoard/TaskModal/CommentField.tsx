@@ -8,11 +8,91 @@ import Image from "@tiptap/extension-image"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Input } from "@/components/ui/input"
-import { Bold, Italic, LinkIcon, List, ListOrdered, ImageIcon, Code, X, Paperclip } from 'lucide-react'
+import { Bold, Italic, LinkIcon, List, ListOrdered, ImageIcon, Code, X, Paperclip } from "lucide-react"
 
 interface CommentFieldProps {
   onCommentAdd: (newComment: string, attachments?: File[]) => void
 }
+
+const CustomImage = Image.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      width: {
+        default: null,
+        renderHTML: (attributes) => {
+          return {
+            width: attributes.width,
+          }
+        },
+      },
+      height: {
+        default: null,
+        renderHTML: (attributes) => {
+          return {
+            height: attributes.height,
+          }
+        },
+      },
+    }
+  },
+  addNodeView() {
+    return ({ node, getPos, editor }) => {
+      const container = document.createElement("div")
+      container.classList.add("image-resizer")
+
+      const img = document.createElement("img")
+      img.src = node.attrs.src
+      img.alt = node.attrs.alt
+      img.width = node.attrs.width || 200
+      img.height = node.attrs.height || "auto"
+      img.style.cursor = "pointer"
+
+      const resizeHandle = document.createElement("div")
+      resizeHandle.classList.add("resize-handle")
+
+      container.appendChild(img)
+      container.appendChild(resizeHandle)
+
+      let startX: number, startY: number, startWidth: number, startHeight: number
+
+      const onMouseDown = (event: MouseEvent) => {
+        event.preventDefault()
+        startX = event.clientX
+        startY = event.clientY
+        startWidth = img.width
+        startHeight = img.height
+        document.addEventListener("mousemove", onMouseMove)
+        document.addEventListener("mouseup", onMouseUp)
+      }
+
+      const onMouseMove = (event: MouseEvent) => {
+        const dx = event.clientX - startX
+        const dy = event.clientY - startY
+        img.width = startWidth + dx
+        img.height = startHeight + dy
+      }
+
+      const onMouseUp = () => {
+        document.removeEventListener("mousemove", onMouseMove)
+        document.removeEventListener("mouseup", onMouseUp)
+        if (typeof getPos === "function") {
+          editor.commands.setNodeSelection(getPos())
+        }
+        editor.commands.updateAttributes("image", { width: img.width, height: img.height })
+      }
+
+      resizeHandle.addEventListener("mousedown", onMouseDown)
+
+      return {
+        dom: container,
+        destroy: () => {
+          resizeHandle.removeEventListener("mousedown", onMouseDown)
+        },
+      }
+    }
+  },
+})
 
 export default function CommentField({ onCommentAdd }: CommentFieldProps) {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -29,9 +109,9 @@ export default function CommentField({ onCommentAdd }: CommentFieldProps) {
           class: "text-blue-500 underline",
         },
       }),
-      Image.configure({
+      CustomImage.configure({
         HTMLAttributes: {
-          class: 'max-w-full h-auto',
+          class: "max-w-full",
         },
       }),
     ],
@@ -74,7 +154,11 @@ export default function CommentField({ onCommentAdd }: CommentFieldProps) {
       const reader = new FileReader()
       reader.onload = (e) => {
         if (e.target?.result && editor) {
-          editor.chain().focus().setImage({ src: e.target.result as string }).run()
+          editor
+            .chain()
+            .focus()
+            .setImage({ src: e.target.result as string })
+            .run()
         }
       }
       reader.readAsDataURL(file)
@@ -175,20 +259,8 @@ export default function CommentField({ onCommentAdd }: CommentFieldProps) {
             </div>
           </div>
 
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            className="hidden" 
-            onChange={handleFileUpload} 
-            multiple 
-          />
-          <input 
-            type="file" 
-            ref={imageInputRef} 
-            className="hidden" 
-            onChange={handleImageUpload} 
-            accept="image/*" 
-          />
+          <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileUpload} multiple />
+          <input type="file" ref={imageInputRef} className="hidden" onChange={handleImageUpload} accept="image/*" />
 
           <div className="flex justify-end pt-2">
             <Button
@@ -208,3 +280,4 @@ export default function CommentField({ onCommentAdd }: CommentFieldProps) {
     </div>
   )
 }
+

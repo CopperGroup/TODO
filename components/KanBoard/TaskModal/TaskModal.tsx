@@ -19,7 +19,7 @@ import LinkedTaskItem from "./LinkedTaskItem"
 import AddLabel from "./AddLabel"
 import LinkedTaskSelectionCombobox from "./LinkedTaskSelectionCombobox"
 import TaskAttachments from "./TaskAttachments"
-import { addAttachmentsToTask, assignTask, updateTaskColumn, updateTaskDescription, updateTaskLabels } from "@/lib/actions/task.actions"
+import { addAttachmentsToTask, assignTask, removeAttachmentsFromTask, updateTaskColumn, updateTaskDescription, updateTaskLabels } from "@/lib/actions/task.actions"
 import SubtaskList from "./SubTaskList"
 import { createComment } from "@/lib/actions/comment.actions"
 
@@ -151,11 +151,13 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onUpdate, 
     await addAttachmentsToTask({ taskId: task._id, attachmentsLinks: attachments}, 'json')
   }
   
-  const handleAttachmentRemove = (index: number) => {
+  const handleAttachmentRemove = async (attachments: string[], index: number) => {
     setLocalTask(prev => ({
       ...prev,
       attachments: prev.attachments.filter((_, i) => i !== index)
     }))
+
+    await removeAttachmentsFromTask({ taskId: task._id, attachmentLinks: attachments })
   }
 
   const handleSubtaskColumnChange = async (subtaskId: string, columnId: string) => {

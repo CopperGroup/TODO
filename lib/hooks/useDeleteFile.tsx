@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const useDeleteFile = () => {
+export function useDeleteFile () {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,5 +43,3 @@ const useDeleteFile = () => {
 
   return { deleteFile, isLoading, error };
 };
-
-export default useDeleteFile;

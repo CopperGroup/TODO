@@ -10,16 +10,18 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { ChevronDown } from "lucide-react"
 import { motion } from "framer-motion"
 import { useUpload } from "@/lib/hooks/useUpload"
+import { useDeleteFile } from "@/lib/hooks/useDeleteFile"
 
 interface TaskAttachmentsProps {
   attachments: string[]
   onAttachmentAdd: (urls: string[]) => void
-  onAttachmentRemove: (index: number) => void
+  onAttachmentRemove: (attachments: string[], index: number) => void
 }
 
 const TaskAttachments: React.FC<TaskAttachmentsProps> = ({ attachments, onAttachmentAdd, onAttachmentRemove }) => {
   const [isDropzoneOpen, setIsDropzoneOpen] = useState(false)
   const { uploadFiles, isUploading, error } = useUpload()
+  const { deleteFile } = useDeleteFile() // Initialize the delete hook
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
@@ -64,6 +66,12 @@ const TaskAttachments: React.FC<TaskAttachmentsProps> = ({ attachments, onAttach
 
   const isImage = (attachment: string) => {
     return /\.(jpeg|jpg|gif|png|webp|bmp)$/i.test(attachment)
+  }
+
+  const handleAttachmentRemove = async (index: number, attachment: string) => {
+    // Call the delete file hook to delete from Cloudinary (or your storage service)
+    await deleteFile(attachment)
+    onAttachmentRemove([attachment], index) // Remove from the local state after deletion
   }
 
   return (
@@ -131,8 +139,8 @@ const TaskAttachments: React.FC<TaskAttachmentsProps> = ({ attachments, onAttach
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => onAttachmentRemove(index)}
-                    className="absolute top-1 right-1 bg-zinc-900/80 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => handleAttachmentRemove(index, attachment)}
+                    className="absolute top-1 right-1 bg-zinc-900/80 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900 opacity-0 group-hover:opacity-100 transition-opacity z-20"
                   >
                     <FiX className="w-4 h-4" />
                   </Button>
@@ -140,7 +148,7 @@ const TaskAttachments: React.FC<TaskAttachmentsProps> = ({ attachments, onAttach
                     href={attachment}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="absolute inset-0 w-full h-full"
+                    className="absolute inset-0 w-full h-full z-10"
                     aria-label={`View attachment ${index + 1}`}
                   />
                 </div>
@@ -154,4 +162,3 @@ const TaskAttachments: React.FC<TaskAttachmentsProps> = ({ attachments, onAttach
 }
 
 export default TaskAttachments
-
