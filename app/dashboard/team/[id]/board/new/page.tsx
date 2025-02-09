@@ -13,11 +13,6 @@ import { useRouter } from "next/navigation"
 import { createBoard } from "@/lib/actions/board.actions"
 
 const CreateBoardPage = ({ params }: { params: { id: string }}) => {
-
-    if(!params.id) {
-        return null
-    }
-
     const router = useRouter();
 
     const form = useForm<z.infer<typeof boardSchema>>({
@@ -27,6 +22,11 @@ const CreateBoardPage = ({ params }: { params: { id: string }}) => {
         },
     })
 
+    if(!params.id) {
+        return null
+    }
+
+
     const onSubmit = async (values: z.infer<typeof boardSchema>) => {
         const result = await createBoard({ teamId: params.id, boardName: values.boardName }, 'json')
 
@@ -34,7 +34,7 @@ const CreateBoardPage = ({ params }: { params: { id: string }}) => {
 
         router.push(`/dashboard/team/${params.id}/board/${board._id}`)
 
-        // router.refresh()
+        router.refresh()
     }
 
     return (

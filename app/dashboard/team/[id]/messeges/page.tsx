@@ -68,10 +68,10 @@ const ChatApp = () => {
                       onClose={handleCloseChat} />
           <div className="flex-grow overflow-y-auto p-4">
             <Message sender="Alice" timestamp="2 minutes ago" avatar="/placeholder.svg?height=40&width=40">
-              <MessageContent>Hey, how's it going?</MessageContent>
+              <MessageContent>Hey, how&apos;s it going?</MessageContent>
             </Message>
             <Message sender="You" timestamp="1 minute ago" isCurrentUser>
-              <MessageContent>I'm doing well, thanks for asking!</MessageContent>
+              <MessageContent>I&apos;m doing well, thanks for asking!</MessageContent>
             </Message>
             <Message sender="Alice" timestamp="Just now" avatar="/placeholder.svg?height=40&width=40">
               <MessageContent>Great! Do you have time for a quick call later today?</MessageContent>
