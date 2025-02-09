@@ -314,10 +314,10 @@ const Chat = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
           <ChatHeader name={activeChatData?.name || ""} avatar={activeChatData?.avatar} onClose={handleCloseChat} />
           <div className="flex-grow overflow-y-auto p-4">
             <Message sender="Alice" timestamp="2 minutes ago" avatar="/placeholder.svg?height=40&width=40">
-              Hey, how's it going?
+              Hey, how&apos;s it going?
             </Message>
             <Message sender="You" timestamp="1 minute ago" isCurrentUser>
-              I'm doing well, thanks for asking!
+              I&apos;m doing well, thanks for asking!
             </Message>
             <Message sender="Alice" timestamp="Just now" avatar="/placeholder.svg?height=40&width=40">
               Great! Do you have time for a quick call later today?
