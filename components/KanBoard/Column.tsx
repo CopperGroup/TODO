@@ -175,7 +175,7 @@ const Column= ({
               key={c._id} 
               {...c} 
               handleDragStart={handleDragStart} 
-              teamUsers={team.users} 
+              teamUsers={team.members} 
               allTasks={cards} 
               team={team} 
               currentUser={currentUser}

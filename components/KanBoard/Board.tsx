@@ -9,6 +9,7 @@ import { AddColumn } from "./AddColumn";
 import { motion } from "framer-motion"
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import { changeBoardColumnsOrder } from "@/lib/actions/board.actions";
 
 function debounce(func: Function, wait: number) {
   let timeout: NodeJS.Timeout
@@ -111,7 +112,7 @@ const Board = ({ stringifiedBoard }: { stringifiedBoard: string }) => {
     });
   };
 
-  const handleColumnDragEnd = (e: any) => {
+  const handleColumnDragEnd = async (e: any) => {
     if(isDraggingColumn) {
       const columnId = e.dataTransfer.getData("columnId");
       
@@ -151,6 +152,9 @@ const Board = ({ stringifiedBoard }: { stringifiedBoard: string }) => {
         }
 
         setColumns(copy)
+
+        await changeBoardColumnsOrder({ boardId: board._id, columnsIds: copy.map(c => c._id) })
+
       }
       setIsDraggingColumn(false)
     }

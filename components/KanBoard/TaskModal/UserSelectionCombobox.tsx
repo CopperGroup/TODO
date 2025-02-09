@@ -23,7 +23,7 @@ const UserSelectionCombobox: React.FC<UserSelectionComboboxProps> = ({ team, ass
   const [assigneeInput, setAssigneeInput] = useState("")
   const [comboboxOpen, setComboboxOpen] = useState(false)
 
-  const filteredUsers = team.users.filter((member) => {
+  const filteredUsers = team.members.filter((member) => {
     const searchInput = assigneeInput.toLowerCase()
     return (
       !assignees.some((a) => a._id === member.user._id) && 

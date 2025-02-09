@@ -145,7 +145,7 @@ export default async function TeamsPage() {
                         <p className="text-sm font-semibold">Team Members</p>
                       </div>
                       <div className="flex -space-x-2">
-                        {team.users.slice(0, 3).map((member) => (
+                        {team.members.slice(0, 3).map((member) => (
                           <div key={member.user._id} className="relative">
                             <Avatar className="border-2 border-white">
                               <AvatarImage className="aspect-auto" src={member.user.profilePicture} alt={member.user.name} />
@@ -162,11 +162,14 @@ export default async function TeamsPage() {
                         <p className="text-sm font-semibold">Active Boards</p>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {team.boards.map((board) => (
+                        {team.boards.slice(0, team.boards.length > 3 ? 2 : 3).map((board) => (
                           <Badge key={board._id} variant="outline">
                             {board.name}
                           </Badge>
                         ))}
+                        {team.boards.length > 3 && (
+                          <Badge variant="outline">{`+ ${team.boards.length - 2} more`}</Badge>
+                        )}
                       </div>
                     </div>
                   </div>

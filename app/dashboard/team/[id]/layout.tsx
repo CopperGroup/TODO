@@ -5,22 +5,35 @@ import { AdminSidebar } from "@/components/admin-components/AdminSidebar"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { fetchUsersTeamsIdNameColorBoards } from "@/lib/actions/team.actions"
 import { currentUser } from "@clerk/nextjs/server"
+import { redirect } from "next/navigation";
 import type React from "react" // Added import for React
 
 export default async function RootLayout({
   children,
+  params
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode,
+  params: Promise<{ id: string }>
 }>) {
-  
-  const user = await currentUser();
 
-  const teams = await fetchUsersTeamsIdNameColorBoards({ clerkId: user?.id})
+  const teamId = (await params).id;
+
+  const clerkUser = await currentUser();
+
+  const { user, teams } = await fetchUsersTeamsIdNameColorBoards({ clerkId: clerkUser?.id})
+
+  console.log(teams[0].members, user.name)
+  const currentTeam = await teams.find(team => team.teamId === teamId)
+
+  if (!currentTeam || !currentTeam.members.map(member => member.user.toString()).includes(user._id.toString())) {
+    redirect('/dashboard')
+  }
+  
 
   return (
       <section className="flex h-screen overflow-hidden">
         <SidebarProvider>
-            <AdminSidebar teams={teams} />
+            <AdminSidebar teams={teams} user={user}/>
             <main className="w-full flex-1 overflow-auto custom-scrollbar-blue">
               <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b px-4 bg-white">
               <AdminBreadcrumb teams={teams} />

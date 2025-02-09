@@ -4,7 +4,7 @@ import cloudinary from "cloudinary";
 
 // Configure Cloudinary using environment variables
 cloudinary.v2.config({
-  cloud_name: process.env.CLOUD_NAME,
+  cloud_name: process.env.NEXT_PUBLIC_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
@@ -16,7 +16,7 @@ export async function DELETE(req: NextRequest) {
 
     // Extract the public ID from the Cloudinary URL
     const extractPublicId = (url: string) => {
-      const regex = /\/upload\/(.*?)(\.[a-zA-Z0-9]+)$/;
+      const regex = /\/([^/]+)(?=\.[a-zA-Z0-9]+$)/;
       const match = url.match(regex);
       return match ? match[1] : null;
     };

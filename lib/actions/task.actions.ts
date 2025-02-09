@@ -239,7 +239,8 @@ export async function assignTask({ assigneesIds, taskId }: { assigneesIds: strin
    try {
     connectToDB()
 
-    const users = await User.find({ '_id': { $in: assigneesIds } }).exec();
+    const users = await User.find({ _id: { $in: assigneesIds } }).exec();
+
     if (users.length !== assigneesIds.length) {
       throw new Error("One or more users do not exist.");
     }
@@ -366,10 +367,8 @@ export async function removeAttachmentsFromTask({ taskId, attachmentLinks }: { t
 
 export async function removeAttachmentsFromTask({ taskId, attachmentLinks }: { taskId: string, attachmentLinks: string[] }, type?: 'json') {
   try {
-    // Ensure the DB connection
     await connectToDB();
 
-    // Perform the update to remove attachments from the task
     const task = await Task.findByIdAndUpdate(
       taskId,
       {
@@ -394,7 +393,6 @@ export async function removeAttachmentsFromTask({ taskId, attachmentLinks }: { t
       },
     ]).exec();
 
-    // If type is 'json', return the stringified task; otherwise, return the populated task
     if (type === 'json') {
       return JSON.stringify(task);
     } else {
@@ -403,4 +401,58 @@ export async function removeAttachmentsFromTask({ taskId, attachmentLinks }: { t
   } catch (error: any) {
     throw new Error(`Error removing attachments: ${error.message}`);
   }
+}
+
+export async function linkTasks({ taskId, linkedTasksIds, operation }: { taskId: string, linkedTasksIds: string[], operation: "Push" | "Pull"}): Promise<PopulatedTaskType>;
+export async function linkTasks({ taskId, linkedTasksIds, operation }: { taskId: string, linkedTasksIds: string[], operation: "Push" | "Pull"}, type: 'json'): Promise<string>;
+
+export async function linkTasks({ taskId, linkedTasksIds, operation }: { taskId: string, linkedTasksIds: string[], operation: "Push" | "Pull"}, type?: 'json') {
+   try {
+    connectToDB()
+
+    const updateOperation = operation === "Push" ? { $addToSet: { linkedTasks: { $each: linkedTasksIds } } } : { $pull: { linkedTasks: { $in: linkedTasksIds } } };
+    const reverseUpdateOperation = operation === "Push" ? { $addToSet: { tasksLinkedToThis: taskId } } : { $pull: { tasksLinkedToThis: taskId } };
+
+    // Update the main task's linkedTasks field
+    const mainTask = await Task.findByIdAndUpdate(
+      taskId,
+      updateOperation,
+      { new: true }
+    ).populate([
+      { path: "author" },
+      { path: "assignedTo" },
+      {
+        path: "subTasks",
+        populate: [
+          { path: "author" },
+          { path: "assignedTo" },
+        ],
+      },
+      { path: "linkedTasks" },
+      {
+        path: "comments",
+        options: { sort: { createdAt: -1 } },
+        populate: { path: "author" },
+      },
+    ]).exec();
+
+    if (!mainTask) {
+      throw new Error("Task not found");
+    }
+
+    // Update the linked tasks to either push or pull the taskId in their tasksLinkedToThis
+    await Task.updateMany(
+      { _id: { $in: linkedTasksIds } },
+      reverseUpdateOperation
+    );
+
+      
+    if(type === 'json'){
+      return JSON.stringify(mainTask)
+    } else {
+      return mainTask
+    }
+   } catch (error: any) {
+     throw new Error(`${error.message}`)
+   }
 }

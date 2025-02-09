@@ -4,18 +4,9 @@ export function useDeleteFile () {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const extractPublicId = (url: string) => {
-    const regex = /\/upload\/(.*?)(\.[a-zA-Z0-9]+)$/;
-    const match = url.match(regex);
-    return match ? match[1] : null; // Extract the public_id part
-  };
+
 
   const deleteFile = async (url: string) => {
-    const publicId = extractPublicId(url);
-    if (!publicId) {
-      setError("Invalid Cloudinary URL");
-      return;
-    }
 
     setIsLoading(true);
     try {
@@ -24,7 +15,7 @@ export function useDeleteFile () {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ publicId }),
+        body: JSON.stringify({ url }),
       });
 
       const data = await response.json();

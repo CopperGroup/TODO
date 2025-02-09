@@ -18,13 +18,18 @@ export function AdminBreadcrumb({
     teamId: string
     name: string
     teamColor: string
-    boards: { boardId: string; name: string }[]
+    boards: { boardId: string; name: string }[] 
   }[]
 }) {
   const pathname = usePathname()
   const pathSegments = pathname.split("/").filter(Boolean)
 
   const getSegmentName = (segment: string, index: number) => {
+    // Handle the "Dashboard" at the start of the breadcrumb
+    if (index === 0) {
+      return "Dashboard"
+    }
+
     // Handle team name
     if (pathSegments[index - 1] === "team") {
       const team = teams.find((t) => t.teamId === segment)
@@ -34,11 +39,14 @@ export function AdminBreadcrumb({
     // Handle board name
     if (pathSegments[index - 1] === "board") {
       const boardId = segment
+      if (boardId === "new") {
+        return "Create board"
+      }
       const team = teams.find((t) =>
         t.boards.some((board) => board.boardId === boardId)
       )
       const board = team?.boards.find((b) => b.boardId === boardId)
-      return board ?`${board.name} Board`: `Board ${segment}`
+      return board ? `${board.name} Board` : `Board ${segment}`
     }
 
     return segment.charAt(0).toUpperCase() + segment.slice(1)

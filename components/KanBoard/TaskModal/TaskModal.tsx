@@ -19,7 +19,7 @@ import LinkedTaskItem from "./LinkedTaskItem"
 import AddLabel from "./AddLabel"
 import LinkedTaskSelectionCombobox from "./LinkedTaskSelectionCombobox"
 import TaskAttachments from "./TaskAttachments"
-import { addAttachmentsToTask, assignTask, removeAttachmentsFromTask, updateTaskColumn, updateTaskDescription, updateTaskLabels } from "@/lib/actions/task.actions"
+import { addAttachmentsToTask, assignTask, linkTasks, removeAttachmentsFromTask, updateTaskColumn, updateTaskDescription, updateTaskLabels } from "@/lib/actions/task.actions"
 import SubtaskList from "./SubTaskList"
 import { createComment } from "@/lib/actions/comment.actions"
 
@@ -60,25 +60,38 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onUpdate, 
     setIsEditingDescription(false)
   }
 
-  const handleLinkedTaskAdd = (taskId: string) => {
+  const handleLinkedTaskAdd = async (taskId: string) => {
     const linkedTask = allTasks.find((t) => t._id === taskId)
     if (linkedTask && !localTask.linkedTasks.find((lt) => lt._id === taskId)) {
       setLocalTask((prev) => ({
         ...prev,
         linkedTasks: [...prev.linkedTasks, linkedTask],
       }))
+
+      try {
+        const updatedIds = [...localTask.linkedTasks.map((t) => t._id), linkedTask._id];
+        await linkTasks({ taskId: task._id, linkedTasksIds: updatedIds, operation: "Push" });
+      } catch (error) {
+        console.error("Failed to link task:", error);
+      }
     }
   }
 
-  const handleUnlinkTask = (taskId: string) => {
+  const handleUnlinkTask = async (taskId: string) => {
     setLocalTask((prev) => ({
       ...prev,
       linkedTasks: [...prev.linkedTasks.filter(task => task._id !== taskId)],
     }))
+
+    try {
+      await linkTasks({ taskId: task._id, linkedTasksIds: [taskId], operation: "Pull" });
+    } catch (error) {
+      console.error("Failed to unlink task:", error);
+    }
   }
 
   const handleSelectUser = async (userId: string) => {
-    const user = team.users.find(member => member.user._id === userId)?.user
+    const user = team.members.find(member => member.user._id === userId)?.user
 
     if(user && !localTask.assignedTo.find(au => au._id === userId)) {
       setLocalTask((prev) => ({
@@ -87,7 +100,13 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onUpdate, 
       }))
 
       onUpdate({ ...localTask, assignedTo: localTask.assignedTo.concat([user])})
-      await assignTask({ taskId: task._id, assigneesIds: localTask.assignedTo.map(as => as._id).concat([user._id])}, 'json')
+
+      try {
+        const updatedIds = [...localTask.assignedTo.map((as) => as._id), user._id];
+        await assignTask({ taskId: task._id, assigneesIds: updatedIds }, 'json');
+      } catch (error) {
+        console.error("Failed to assign task:", error);
+      }
     }
   }
 
@@ -98,7 +117,13 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onUpdate, 
     }))
 
     onUpdate({ ...localTask, assignedTo: localTask.assignedTo.filter(user => user._id !== userId) })
-    await assignTask({ taskId: task._id, assigneesIds: localTask.assignedTo.filter(user => user._id !== userId).map(u => u._id)}, 'json')
+
+    try {
+      const updatedIds = localTask.assignedTo.filter((user) => user._id !== userId).map((user) => user._id);
+      await assignTask({ taskId: task._id, assigneesIds: updatedIds }, 'json');
+    } catch (error) {
+      console.error("Failed to unassign task:", error);
+    }
   }
 
   const handleSubtaskAdd = (newSubtask: PopulatedTaskType) => {
@@ -126,9 +151,16 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onUpdate, 
         ...prev,
         labels: [...(prev.labels || []), label.trim()],
       }))
+
       setIsAddingLabel(false)
       onUpdate(localTask)
-      await updateTaskLabels({ taskId: task._id, labels: localTask.labels ? localTask.labels.concat([label.trim()]) : [label.trim()]}, 'json')
+
+      try {
+        const updatedLabels = [...(localTask.labels || []), label.trim()];
+        await updateTaskLabels({ taskId: task._id, labels: updatedLabels }, 'json');
+      } catch (error) {
+        console.error("Failed to add label:", error);
+      }
     }
   }
 
@@ -138,8 +170,13 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onUpdate, 
       labels: [...(prev.labels.filter(l => l !== label))],
     }))
     onUpdate(localTask)
-    await updateTaskLabels({ taskId: task._id, labels: localTask.labels.filter(l => l !== label)}, 'json')
 
+    try {
+      const updatedLabels = localTask.labels.filter((l) => l !== label);
+      await updateTaskLabels({ taskId: task._id, labels: updatedLabels }, 'json');
+    } catch (error) {
+      console.error("Failed to remove label:", error);
+    }
   }
 
   const handleAttachmentAdd = async (attachments: string[]) => {
@@ -157,7 +194,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onUpdate, 
       attachments: prev.attachments.filter((_, i) => i !== index)
     }))
 
-    await removeAttachmentsFromTask({ taskId: task._id, attachmentLinks: attachments })
+    await removeAttachmentsFromTask({ taskId: task._id, attachmentLinks: attachments }, 'json')
   }
 
   const handleSubtaskColumnChange = async (subtaskId: string, columnId: string) => {
@@ -316,7 +353,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onUpdate, 
           </ScrollArea>
 
           {/* Right Column */}
-          <div className="w-80 lg:w-96 flex-shrink-0 overflow-y-auto">
+          <ScrollArea className="w-80 lg:w-96 flex-shrink-0 overflow-y-auto">
             <div className="p-4 lg:p-6 space-y-6">
               <div className="space-y-3">
                 <h4 className="font-medium text-zinc-100">Assignees</h4>
@@ -368,20 +405,20 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onUpdate, 
 
               <div className="space-y-3">
                 <h4 className="font-medium text-zinc-100">Linked Tasks</h4>
+                  <LinkedTaskSelectionCombobox
+                    allTasks={allTasks}
+                    currentTaskId={localTask._id}
+                    linkedTaskIds={localTask.linkedTasks.map((lt) => lt._id)}
+                    onTaskSelect={handleLinkedTaskAdd}
+                  />
                 <div className="space-y-2">
                   {localTask.linkedTasks.map((linkedTask) => (
                     <LinkedTaskItem key={linkedTask._id} task={linkedTask} handleUnlinkTask={handleUnlinkTask}/>
                   ))}
                 </div>
-                <LinkedTaskSelectionCombobox
-                  allTasks={allTasks}
-                  currentTaskId={localTask._id}
-                  linkedTaskIds={localTask.linkedTasks.map((lt) => lt._id)}
-                  onTaskSelect={handleLinkedTaskAdd}
-                />
               </div>
             </div>
-          </div>
+          </ScrollArea>
         </div>
       </div>
     </div>,

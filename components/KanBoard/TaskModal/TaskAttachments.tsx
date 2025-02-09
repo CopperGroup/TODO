@@ -69,11 +69,12 @@ const TaskAttachments: React.FC<TaskAttachmentsProps> = ({ attachments, onAttach
   }
 
   const handleAttachmentRemove = async (index: number, attachment: string) => {
-    // Call the delete file hook to delete from Cloudinary (or your storage service)
+    console.log(attachment)
     await deleteFile(attachment)
     onAttachmentRemove([attachment], index) // Remove from the local state after deletion
+      // Call the delete file hook to delete from Cloudinary (or your storage service)
   }
-
+  
   return (
     <Accordion type="single" collapsible defaultValue="attachments" className="w-full">
       <AccordionItem value="attachments" className="text-zinc-100 border-0">

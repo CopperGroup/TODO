@@ -1,7 +1,7 @@
 export type PopulatedTeamType = {
     _id: string;
     name: string;
-    users: {
+    members: {
       user: {
         _id: string;
         name: string;

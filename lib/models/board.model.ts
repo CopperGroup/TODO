@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { InferSchemaType } from "mongoose";
 
 const boardSchema = new mongoose.Schema({
     name: {
@@ -24,6 +25,10 @@ const boardSchema = new mongoose.Schema({
     ]
 })
 
+type BoardType = InferSchemaType<typeof boardSchema> & { _id: string};
+
 const Board = mongoose.models.Board || mongoose.model("Board", boardSchema);
 
 export default Board;
+
+export type { BoardType };

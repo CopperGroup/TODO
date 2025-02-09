@@ -1,6 +1,8 @@
 "use server";
 
-import Board from "../models/board.model";
+import Board, { BoardType } from "../models/board.model";
+import Column from "../models/column.model";
+import Team from "../models/team.model";
 import { connectToDB } from "../mongoose";
 import { PopulatedBoardType, PopulatedTaskType } from "../types";
 
@@ -19,7 +21,7 @@ export async function fetchBoardById({ boardId }: { boardId: string }, type?: 'j
     .populate({
       path: "team",
       populate: {
-        path: "users.user", // Populate team users
+        path: "members.user", // Populate team users
       },
     })
     .populate({
@@ -78,4 +80,83 @@ export async function changeTasksColumn({ boardId, tasks }: { boardId: string; t
   } catch (error: any) {
     throw new Error(error.message || "Failed to update tasks");
   }
+}
+
+export async function changeBoardColumnsOrder({ boardId, columnsIds }: { boardId: string, columnsIds: string[] }) {
+  try {
+    connectToDB();
+
+    await Board.findByIdAndUpdate(
+        boardId,
+        {
+            columns: columnsIds
+        }
+    )
+  } catch (error: any) {
+    throw new Error(`Erorr changing board's coulmns order: ${error.message}`)
+  }
+}
+
+
+export async function createBoard({ teamId, boardName }: { teamId: string, boardName: string }): Promise<BoardType>;
+export async function createBoard({ teamId, boardName }: { teamId: string, boardName: string }, type: 'json'): Promise<string>;
+
+export async function createBoard({ teamId, boardName }: { teamId: string, boardName: string }, type?: 'json') {
+   try {
+    connectToDB();
+
+    const team = await Team.findById(teamId);
+
+    if(!team) {
+        throw new Error("Team hasn't been found")
+    }
+
+    const board = await Board.create({
+        name: boardName,
+        team: teamId
+    })
+
+    if(board) {
+        const columns = [
+            {
+                name: "Backlog",
+                textColor: "#737373",
+                board: board._id
+            },
+            {
+                name: "TODO",
+                textColor: "#fef08a",
+                board: board._id
+            },
+            {
+                name: "In Progress",
+                textColor: "#bfdbfe",
+                board: board._id
+            },
+            {
+                name: "Done",
+                textColor: "#a7f3d0",
+                board: board._id
+            }
+        ];
+
+        const firstColumns = await Column.insertMany(columns);
+
+        board.columns = firstColumns.map(col => col._id);
+
+        await board.save();
+
+        team.boards.push(board._id);
+
+        await team.save()
+    }
+    
+    if(type === 'json'){
+      return JSON.stringify(board)
+    } else {
+      return board
+    }
+   } catch (error: any) {
+     throw new Error(`${error.message}`)
+   }
 }

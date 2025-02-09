@@ -46,11 +46,11 @@ const AddSubtask: React.FC<AddSubtaskProps> = ({ onSubtaskAdd, parentTaskId, tea
     setSubtaskType("Issue")
     setSelectedAssignees([])
     setIsAdding(false)
-    
+
     onSubtaskAdd(JSON.parse(result))
   }
 
-  const filteredUsers = team.users.filter(
+  const filteredUsers = team.members.filter(
     (user) =>
       !selectedAssignees.some((assignee) => assignee._id === user.user._id) &&
       user.user.name.toLowerCase().includes(assigneeInput.toLowerCase())

@@ -115,6 +115,7 @@ export default function CommentField({ onCommentAdd }: CommentFieldProps) {
         },
       }),
     ],
+    immediatelyRender: false,
     content: "",
     editorProps: {
       attributes: {

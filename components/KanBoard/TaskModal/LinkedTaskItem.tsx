@@ -14,7 +14,11 @@ const LinkedTaskItem: React.FC<LinkedTaskItemProps> = ({ task, handleUnlinkTask 
     <div className="flex items-center gap-3 bg-zinc-800/50 px-3 py-0.5 rounded-lg hover:bg-zinc-800 transition-colors">
       <FiLink className="text-zinc-400 flex-shrink-0" />
       <span className="flex-grow text-sm text-zinc-300 line-clamp-1">{task.description}</span>
-      <Badge variant={task.type === "Bug" ? "destructive" : "default"} className="flex-shrink-0">
+      <Badge
+      className={`${
+          task.type === "Bug" ? "bg-red-500 hover:bg-red-600" : "bg-neutral-500 hover:bg-neutral-400"
+        } text-center`}
+      >
         {task.type}
       </Badge>
       <Button variant="ghost" size="sm" className="text-zinc-300 p-0 hover:text-zinc-100 hover:bg-transparent" onClick={() => handleUnlinkTask(task._id)}>

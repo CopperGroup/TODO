@@ -5,7 +5,7 @@ const teamSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please provide a team name"],
   },
-  users: [
+  members: [
     {
       user: {
         type: mongoose.Schema.Types.ObjectId,
@@ -42,7 +42,15 @@ const teamSchema = new mongoose.Schema({
   ]
 });
 
-type TeamType = InferSchemaType<typeof teamSchema> & { _id: string};
+type TeamType = InferSchemaType<typeof teamSchema> & { 
+  _id: string,
+  boards: string[],
+  tasks: string[],
+  members: {
+    user: string;
+    role: "Admin" | "Member"
+  } 
+};
 
 const Team = mongoose.models.Team || mongoose.model<TeamType>("Team", teamSchema);
 
