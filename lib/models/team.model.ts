@@ -30,6 +30,12 @@ const teamSchema = new mongoose.Schema({
       type: String,
     },
   ],
+  requests: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
+    }
+  ],
   themeColor: {
     type: String,
     default: "#3b82f6",
@@ -44,12 +50,13 @@ const teamSchema = new mongoose.Schema({
 
 type TeamType = InferSchemaType<typeof teamSchema> & { 
   _id: string,
-  boards: string[],
-  tasks: string[],
+  boards?: string[],
+  tasks?: string[],
   members: {
     user: string;
     role: "Admin" | "Member"
-  } 
+  },
+  requests?: string[]
 };
 
 const Team = mongoose.models.Team || mongoose.model<TeamType>("Team", teamSchema);

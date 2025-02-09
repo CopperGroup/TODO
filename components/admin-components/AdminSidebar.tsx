@@ -11,6 +11,7 @@ import {
   Settings,
   ChevronRight,
   PlusCircle,
+  Inbox,
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -53,6 +54,7 @@ export function AdminSidebar({ user, teams }: { user: UserType, teams: { teamId:
     { title: "Tasks", icon: ListTodo, url: "/dashboard/tasks" },
     { title: "Boards", icon: LayoutDashboard, url: "/dashboard/boards" },
     { title: "Members", icon: Users, url: "/dashboard/members" },
+    { title: "Messages", icon: Inbox, url: `/dashboard/team/${selectedTeam?.teamId}/messeges`}
   ]
 
   React.useEffect(() => {

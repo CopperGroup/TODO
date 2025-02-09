@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
           console.log("Creating user...");
           await User.create({
             clerkId: id,
-            name: `${first_name} ${last_name}`,
+            name: `${first_name}${last_name !== "null" ? " " + last_name : ""}`,
             email,
             profilePicture: image_url,
             online: false,
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
           await User.findOneAndUpdate(
             { clerkId: id },
             {
-              name: `${first_name} ${last_name}`,
+              name: `${first_name}${last_name !== "null" ? " " + last_name : ""}`,
               email,
               profilePicture: image_url,
             }

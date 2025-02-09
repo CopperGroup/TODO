@@ -34,7 +34,7 @@ const CreateBoardPage = ({ params }: { params: { id: string }}) => {
 
         router.push(`/dashboard/team/${params.id}/board/${board._id}`)
 
-        router.refresh()
+        // router.refresh()
     }
 
     return (

@@ -26,6 +26,12 @@ const userSchema = new mongoose.Schema({
       ref: "Team",
     },
   ],
+  requests: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Team"
+    }
+  ],
   people: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -34,7 +40,10 @@ const userSchema = new mongoose.Schema({
   ]
 });
 
-type UserType = InferSchemaType<typeof userSchema> & { _id: string };
+type UserType = InferSchemaType<typeof userSchema> & { 
+  _id: string,
+  teams: string[]
+};
 
 const User = mongoose.models.User || mongoose.model<UserType>("User", userSchema);
 

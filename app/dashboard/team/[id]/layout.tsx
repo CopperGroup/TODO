@@ -22,7 +22,6 @@ export default async function RootLayout({
 
   const { user, teams } = await fetchUsersTeamsIdNameColorBoards({ clerkId: clerkUser?.id})
 
-  console.log(teams[0].members, user.name)
   const currentTeam = await teams.find(team => team.teamId === teamId)
 
   if (!currentTeam || !currentTeam.members.map(member => member.user.toString()).includes(user._id.toString())) {

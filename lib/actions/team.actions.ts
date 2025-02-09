@@ -1,6 +1,5 @@
 "use server";
 
-import { Types } from "mongoose";
 import Team, { TeamType } from "../models/team.model";
 import User, { UserType } from "../models/user.model";
 import { connectToDB } from "../mongoose";
@@ -10,6 +9,7 @@ import Task from "../models/task.model";
 import { PopulatedTeamType } from "../types";
 import { revalidatePath } from "next/cache";
 import Comment from "../models/comment.model";
+import { redirect } from "next/navigation";
 
 type createTeamParams = {
    name: string
@@ -227,5 +227,63 @@ export async function fetchUsersTeamsIdNameColorBoards(
     };
   } catch (error: any) {
     throw new Error(`Error fetching sidebar info: ${error.message}`);
+  }
+}
+
+export async function fetchTeamName({ teamId }: { teamId: string} ) {
+  try {
+    connectToDB()
+
+    const team = await Team.findById(teamId);
+    
+    if(!team) redirect("/")
+
+    return team.name
+  } catch (error: any) {
+    throw new Error(`Error fetching team name: ${error.message}`)
+  }
+}
+
+export async function joinTeam({ clerkId, teamId }: { clerkId?: string, teamId: string }): Promise<string> {
+  try {
+    connectToDB();
+
+    console.log(clerkId);
+    const user = await User.findOne({ clerkId });
+
+    console.log(user)
+    if(!user) {
+      throw new Error("User not found ")
+    }
+
+    const team = await Team.findById(teamId);
+
+    if(!team) {
+      throw new Error("Team not found ")
+    }
+
+    if(team.invitedMembers.includes(user.email)) {
+      team.invitedMembers = team.invitedMembers.filter((email: string) => email !== user.email);
+      team.members.push({ user: user._id, role: "Member" })
+      user.teams.push(team._id)
+
+      await team.save()
+      await user.save()
+
+      console.log(user, team);
+
+      return(`/dashboard/team/${team._id}`)
+
+    } else {
+      team.requests = Array.from(new Set([...team.requests, user._id]));
+      user.requests = Array.from(new Set([...user.requests, team._id]));
+
+      await team.save()
+      await user.save()
+
+      return('/requestSent')
+    }
+  } catch (error: any) {
+    throw new Error(`Erorr joining team ${error.message}`)
   }
 }
