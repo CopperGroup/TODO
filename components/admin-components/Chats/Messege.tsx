@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { format } from "date-fns"
 import { performRquestAction } from "@/lib/actions/team.actions"
 import { lowercaseFirstLetter } from "@/lib/utils"
+import { useState } from "react"
 
 export default function MessegeItem({
   messege,
@@ -17,12 +18,13 @@ export default function MessegeItem({
   clerkId: string,
   teamId: string
 }) {
+  const [messegeType, setMessegeType] = useState(messege.type)
   const isOwnMessege = messege.sender.clerkId === clerkId
 
   const handleRequestAction = async (action: "Accept" | "Refuse") => {
-    await performRquestAction({ teamId, messegeContent: messege.content, messegeId: messege._id, action})
+    setMessegeType(`Request-${lowercaseFirstLetter(action)}`)
 
-    messege.type = `Request-${lowercaseFirstLetter(action)}`
+    await performRquestAction({ teamId, messegeContent: messege.content, messegeId: messege._id, action})
   }
 
   return (
@@ -45,13 +47,13 @@ export default function MessegeItem({
               isOwnMessege ? "bg-zinc-800 text-white rounded-tr-none" : "bg-gray-100 text-gray-900 rounded-tl-none"
             }`}
           >
-            {messege.type === "Default" ? (
+            {messegeType === "Default" ? (
               <p className="whitespace-pre-wrap">{messege.content}</p>
             ) : (
               <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: messege.content }} />
             )}
           </MessegeContent>
-          {messege.type === "Request" && (
+          {messegeType === "Request" && (
             <div className="flex space-x-2 mt-2">
               <Button variant="destructive" size="sm" onClick={() => handleRequestAction("Refuse")}>
                 Refuse
@@ -61,14 +63,14 @@ export default function MessegeItem({
               </Button>
             </div>
           )}
-          {messege.type === "Request-accepted" && (
+          {messegeType === "Request-accepted" && (
             <div className="mt-2">
               <Button variant="default" size="sm" disabled>
                 Accepted
               </Button>
             </div>
           )}
-          {messege.type === "Request-refused" && (
+          {messegeType === "Request-refused" && (
             <div className="mt-2">
               <Button variant="destructive" size="sm" disabled>
                 Refused
