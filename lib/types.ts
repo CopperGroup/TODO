@@ -1,3 +1,5 @@
+import  { UserType as User } from "@/lib/models/user.model"
+
 export type PopulatedTeamType = {
     _id: string;
     name: string;
@@ -58,6 +60,7 @@ export type Column = {
 }
 
 import { Types } from "mongoose";
+import { TeamType } from "./models/team.model";
 
 // Comment Type (Populated)
 export type PopulatedCommentType = {
@@ -117,4 +120,23 @@ export type UserType = {
   email: string;
   profilePicture: string;
   // Add other fields you have in the User model
+};
+
+export type TeamPopulatedChatsType = Omit<TeamType, "chats"> & {
+  chats: {
+    _id: string
+    name: string;
+    messeges: {
+      _id: string
+      content: string;
+      sender: User;
+      type: string,
+      readBy: {
+        _id: string,
+        clerkId: string
+      }[]
+      createdAt: Date
+    }[];
+    people: User[];
+  }[];
 };

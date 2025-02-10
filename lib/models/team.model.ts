@@ -45,6 +45,12 @@ const teamSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Task'
     }
+  ],
+  chats: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Chat'
+    },
   ]
 });
 
@@ -56,7 +62,7 @@ type TeamType = InferSchemaType<typeof teamSchema> & {
     user: string;
     role: "Admin" | "Member"
   },
-  requests?: string[]
+  requests?: string[],
 };
 
 const Team = mongoose.models.Team || mongoose.model<TeamType>("Team", teamSchema);

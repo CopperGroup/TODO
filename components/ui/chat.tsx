@@ -2,352 +2,200 @@
 
 import * as React from "react"
 import { cn } from "@/lib/utils"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { X, Send } from "lucide-react"
+import { Input } from "./input"
+import { Button } from "./button"
 
-// Types
-interface ChatItemProps extends React.HTMLAttributes<HTMLDivElement> {
+interface ChatMessege {
   id: string
-  name: string
-  lastMessage: string
-  timestamp: string
-  unreadCount?: number
-  avatar?: string
-  isActive?: boolean
-}
-
-interface ChatListProps extends React.HTMLAttributes<HTMLDivElement> {
-  chats: ChatItemProps[]
-  onChatSelect: (id: string) => void
-  activeChat?: string
-}
-
-interface ChatWindowProps extends React.HTMLAttributes<HTMLDivElement> {
-  isOpen: boolean
-  onClose: () => void
-}
-
-interface ChatHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
-  name: string
-  avatar?: string
-  onClose: () => void
-}
-
-interface MessageInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  onSend: (message: string) => void
-}
-
-interface SendButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  onSend: () => void
-}
-
-interface MessageProps extends React.HTMLAttributes<HTMLDivElement> {
+  content: string
   sender: string
   timestamp: string
-  avatar?: string
-  isCurrentUser?: boolean
 }
 
-// ChatAvatar Component
-const ChatAvatar = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentPropsWithoutRef<typeof Avatar> & { src?: string; alt: string }
->(({ src, alt, className, ...props }, ref) => (
-  <Avatar ref={ref} className={cn("h-10 w-10", className)} {...props}>
-    <AvatarImage src={src} alt={alt} />
-    <AvatarFallback>{alt.slice(0, 2).toUpperCase()}</AvatarFallback>
-  </Avatar>
-))
-ChatAvatar.displayName = "ChatAvatar"
+interface ChatData {
+  id: string
+  name: string
+  avatar: string
+  lastMessege: string
+  timestamp: string
+  unreadCount: number
+  messeges: ChatMessege[]
+}
 
-// ChatItemHeader Component
-const ChatItemHeader = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
-  ({ className, ...props }, ref) => <h3 ref={ref} className={cn("font-semibold truncate", className)} {...props} />,
-)
-ChatItemHeader.displayName = "ChatItemHeader"
+const Chat = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => {
+    const [selectedChat, setSelectedChat] = React.useState<ChatData | null>(null)
 
-// LastMessagePreview Component
-const LastMessagePreview = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
-  ({ className, ...props }, ref) => (
-    <p ref={ref} className={cn("text-sm text-muted-foreground truncate", className)} {...props} />
-  ),
-)
-LastMessagePreview.displayName = "LastMessagePreview"
-
-// Time Component
-const Time = React.forwardRef<HTMLSpanElement, React.HTMLAttributes<HTMLSpanElement>>(
-  ({ className, ...props }, ref) => (
-    <span ref={ref} className={cn("text-xs text-muted-foreground shrink-0", className)} {...props} />
-  ),
-)
-Time.displayName = "Time"
-
-// UnreadMessagesCount Component
-const UnreadMessagesCount = React.forwardRef<HTMLDivElement, React.ComponentPropsWithoutRef<typeof Badge>>(
-  ({ className, ...props }, ref) => <Badge className={cn("ml-auto", className)} {...props} />,
-)
-UnreadMessagesCount.displayName = "UnreadMessagesCount"
-
-// ChatItem Component
-const ChatItem = React.forwardRef<HTMLDivElement, ChatItemProps>(
-  ({ name, lastMessage, timestamp, unreadCount, avatar, isActive, onClick, className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn(
-        "flex items-center space-x-4 p-3 cursor-pointer transition-colors",
-        isActive ? "bg-accent" : "hover:bg-muted",
-        className,
-      )}
-      onClick={onClick}
-      {...props}
-    >
-      <ChatAvatar src={avatar} alt={name} />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between">
-          <ChatItemHeader>{name}</ChatItemHeader>
-          <Time>{timestamp}</Time>
-        </div>
-        <LastMessagePreview>{lastMessage}</LastMessagePreview>
+    return (
+      <div ref={ref} className={cn("flex h-screen", className)} {...props}>
       </div>
-      {unreadCount && unreadCount > 0 && <UnreadMessagesCount>{unreadCount}</UnreadMessagesCount>}
-    </div>
-  ),
+    )
+  },
 )
-ChatItem.displayName = "ChatItem"
+Chat.displayName = "Chat"
 
-// ChatList Component
-const ChatList = React.forwardRef<HTMLDivElement, ChatListProps>(
-  ({ chats, onChatSelect, activeChat, className, ...props }, ref) => (
-    <div ref={ref} className={cn("space-y-2", className)} {...props}>
-      {chats.map((chat) => (
-        <ChatItem key={chat.id} {...chat} isActive={chat.id === activeChat} onClick={() => onChatSelect(chat.id)} />
-      ))}
-    </div>
+const ChatList = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn("flex-shrink-0 overflow-y-auto", className)} {...props} />
   ),
 )
 ChatList.displayName = "ChatList"
 
-// ChatHeader Component
-const ChatHeader = React.forwardRef<HTMLDivElement, ChatHeaderProps>(
-  ({ name, avatar, onClose, className, ...props }, ref) => (
-    <div ref={ref} className={cn("flex items-center justify-between p-4 border-b", className)} {...props}>
-      <div className="flex items-center space-x-3">
-        <ChatAvatar src={avatar} alt={name} />
-        <h2 className="font-semibold">{name}</h2>
-      </div>
-      <Button variant="ghost" size="icon" onClick={onClose}>
-        <X className="h-4 w-4" />
-      </Button>
-    </div>
+const ChatListItem = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn("flex items-center p-3 cursor-pointer hover:bg-accent", className)} {...props} />
+  ),
+)
+ChatListItem.displayName = "ChatListItem"
+
+const ChatListItemProfileImage = React.forwardRef<HTMLImageElement, React.ImgHTMLAttributes<HTMLImageElement>>(
+  ({ className, ...props }, ref) => (
+    <img ref={ref} className={cn("w-10 h-10 rounded-full mr-3", className)} {...props} />
+  ),
+)
+ChatListItemProfileImage.displayName = "ChatListItemProfileImage"
+
+const ChatListItemHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => <div ref={ref} className={cn("font-semibold", className)} {...props} />,
+)
+ChatListItemHeader.displayName = "ChatListItemHeader"
+
+const ChatListItemLastMessegePreview = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLParagraphElement>
+>(({ className, ...props }, ref) => (
+  <p ref={ref} className={cn("text-sm text-muted-foreground truncate", className)} {...props} />
+))
+ChatListItemLastMessegePreview.displayName = "ChatListItemLastMessegePreview"
+
+const ChatListItemTimeStamp = React.forwardRef<HTMLSpanElement, React.HTMLAttributes<HTMLSpanElement>>(
+  ({ className, ...props }, ref) => (
+    <span ref={ref} className={cn("text-xs text-muted-foreground", className)} {...props} />
+  ),
+)
+ChatListItemTimeStamp.displayName = "ChatListItemTimeStamp"
+
+const ChatListItemUnreadCount = React.forwardRef<HTMLSpanElement, React.HTMLAttributes<HTMLSpanElement>>(
+  ({ className, ...props }, ref) => (
+    <span
+      ref={ref}
+      className={cn("bg-primary text-primary-foreground rounded-full px-2 py-1 text-xs", className)}
+      {...props}
+    />
+  ),
+)
+ChatListItemUnreadCount.displayName = "ChatListItemUnreadCount"
+
+const ChatWrapper = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => <div ref={ref} className={cn("flex-grow flex flex-col", className)} {...props} />,
+)
+ChatWrapper.displayName = "ChatWrapper"
+
+const ChatHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn("flex items-center p-3 border-b", className)} {...props} />
   ),
 )
 ChatHeader.displayName = "ChatHeader"
 
-// ChatWindow Component
-const ChatWindow = React.forwardRef<HTMLDivElement, ChatWindowProps>(
-  ({ isOpen, onClose, children, className, ...props }, ref) => (
-    <>
-      {isOpen && (
-        <div ref={ref} className={cn("flex flex-col h-full bg-background", className)} {...props}>
-          {children}
-        </div>
-      )}
-    </>
+const ChatHeaderProfileImage = React.forwardRef<HTMLImageElement, React.ImgHTMLAttributes<HTMLImageElement>>(
+  ({ className, ...props }, ref) => (
+    <img ref={ref} className={cn("w-10 h-10 rounded-full mr-3", className)} {...props} />
   ),
 )
-ChatWindow.displayName = "ChatWindow"
+ChatHeaderProfileImage.displayName = "ChatHeaderProfileImage"
 
-// MessageInput Component
-const MessageInput = React.forwardRef<HTMLInputElement, MessageInputProps>(({ onSend, className, ...props }, ref) => {
-  const [message, setMessage] = React.useState("")
+const ChatHeaderName = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
+  ({ className, ...props }, ref) => <h2 ref={ref} className={cn("font-semibold", className)} {...props} />,
+)
+ChatHeaderName.displayName = "ChatHeaderName"
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      if (message.trim()) {
-        onSend(message)
-        setMessage("")
-      }
-    }
-  }
+const ChatHeaderLastSeen = React.forwardRef<HTMLSpanElement, React.HTMLAttributes<HTMLSpanElement>>(
+  ({ className, ...props }, ref) => (
+    <span ref={ref} className={cn("text-sm text-muted-foreground", className)} {...props} />
+  ),
+)
+ChatHeaderLastSeen.displayName = "ChatHeaderLastSeen"
 
-  return (
-    <Input
-      ref={ref}
-      value={message}
-      onChange={(e) => setMessage(e.target.value)}
-      onKeyDown={handleKeyDown}
-      placeholder="Type a message..."
-      className={cn("flex-1", className)}
-      {...props}
-    />
-  )
-})
-MessageInput.displayName = "MessageInput"
+const CloseChat = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement>>(
+  ({ className, ...props }, ref) => (
+    <button ref={ref} className={cn("ml-auto p-2 rounded-full hover:bg-accent", className)} {...props} />
+  ),
+)
+CloseChat.displayName = "CloseChat"
 
-// SendButton Component
-const SendButton = React.forwardRef<HTMLButtonElement, SendButtonProps>(({ onSend, className, ...props }, ref) => (
-  <Button ref={ref} type="button" size="icon" onClick={onSend} className={cn(className)} {...props}>
-    <Send className="h-4 w-4" />
-  </Button>
-))
-SendButton.displayName = "SendButton"
+const ChatContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn("flex-grow overflow-y-auto p-4", className)} {...props} />
+  ),
+)
+ChatContent.displayName = "ChatContent"
 
-// ChatInput Component
-const ChatInput = React.forwardRef<HTMLFormElement, React.HTMLAttributes<HTMLFormElement>>(
-  ({ className, ...props }, ref) => {
-    const handleSend = (message: string) => {
-      console.log(`Sending message: ${message}`)
-      // Implement your send message logic here
-    }
+const Messege = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => <div ref={ref} className={cn("flex mb-4", className)} {...props} />,
+)
+Messege.displayName = "Messege"
 
-    return (
-      <form ref={ref} className={cn("flex items-center p-4 border-t", className)} {...props}>
-        <MessageInput onSend={handleSend} className="mr-2" />
-        <SendButton onSend={() => handleSend("")} />
-      </form>
-    )
-  },
+const MessegeAuthorProfileImage = React.forwardRef<HTMLImageElement, React.ImgHTMLAttributes<HTMLImageElement>>(
+  ({ className, ...props }, ref) => <img ref={ref} className={cn("w-8 h-8 rounded-full mr-2", className)} {...props} />,
+)
+MessegeAuthorProfileImage.displayName = "MessegeAuthorProfileImage"
+
+const MessegeContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn("bg-accent rounded-lg p-3 max-w-[70%]", className)} {...props} />
+  ),
+)
+MessegeContent.displayName = "MessegeContent"
+
+const ChatInput = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn("flex items-center p-3 border-t", className)} {...props} />
+  ),
 )
 ChatInput.displayName = "ChatInput"
 
-// Sender Component
-const Sender = React.forwardRef<HTMLSpanElement, React.HTMLAttributes<HTMLSpanElement> & { isCurrentUser: boolean }>(
-  ({ isCurrentUser, className, ...props }, ref) => (
-    <span
+const MessegeInput = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
+  ({ className, ...props }, ref) => (
+    <Input ref={ref} className={cn("flex-grow p-2 rounded-lg border", className)} {...props} />
+  ),
+)
+MessegeInput.displayName = "MessegeInput"
+
+const SendMessegeButton = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement>>(
+  ({ className, ...props }, ref) => (
+    <Button
       ref={ref}
-      className={cn("font-semibold", isCurrentUser ? "text-primary" : "text-foreground", className)}
+      className={cn("ml-2 p-2 rounded-full bg-primary text-primary-foreground", className)}
       {...props}
     />
   ),
 )
-Sender.displayName = "Sender"
-
-// MessageContent Component
-const MessageContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => <div ref={ref} className={cn("mt-1", className)} {...props} />,
-)
-MessageContent.displayName = "MessageContent"
-
-// Message Component
-const Message = React.forwardRef<HTMLDivElement, MessageProps>(
-  ({ sender, timestamp, avatar, isCurrentUser = false, children, className, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn(
-        "flex items-start space-x-3 mb-4",
-        isCurrentUser ? "flex-row-reverse space-x-reverse" : "flex-row",
-        className,
-      )}
-      {...props}
-    >
-      {!isCurrentUser && <ChatAvatar src={avatar} alt={sender} />}
-      <div className={cn("flex flex-col", isCurrentUser ? "items-end" : "items-start")}>
-        <div className={cn("px-3 py-2 rounded-lg", isCurrentUser ? "bg-primary text-primary-foreground" : "bg-muted")}>
-          <Sender isCurrentUser={isCurrentUser}>{isCurrentUser ? "You" : sender}</Sender>
-          <MessageContent>{children}</MessageContent>
-        </div>
-        <Time>{timestamp}</Time>
-      </div>
-    </div>
-  ),
-)
-Message.displayName = "Message"
-
-// Main Chat Component
-const Chat = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(({ className, ...props }, ref) => {
-  const [activeChat, setActiveChat] = React.useState<string | null>(null)
-
-  const handleChatSelect = (id: string) => {
-    setActiveChat(id)
-  }
-
-  const handleCloseChat = () => {
-    setActiveChat(null)
-  }
-
-  const handleSendMessage = (message: string) => {
-    console.log(`Sending message: ${message}`)
-    // Implement your send message logic here
-  }
-
-  const mockChats: ChatItemProps[] = [
-    {
-      id: "1",
-      name: "Alice Johnson",
-      lastMessage: "Hey, how's it going?",
-      timestamp: "5m ago",
-      unreadCount: 2,
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    {
-      id: "2",
-      name: "Bob Smith",
-      lastMessage: "Can we reschedule our meeting?",
-      timestamp: "2h ago",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    {
-      id: "3",
-      name: "Carol Williams",
-      lastMessage: "I've sent you the report.",
-      timestamp: "1d ago",
-      unreadCount: 1,
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-  ]
-
-  const activeChatData = mockChats.find((chat) => chat.id === activeChat)
-
-  return (
-    <div ref={ref} className={cn("flex h-screen", className)} {...props}>
-      <div className={cn("flex-none w-full sm:w-80 border-r", activeChat ? "hidden sm:block" : "block")}>
-        <div className="h-full overflow-y-auto">
-          <ChatList chats={mockChats} onChatSelect={handleChatSelect} activeChat={activeChat || undefined} />
-        </div>
-      </div>
-      {activeChat && (
-        <div className="flex-grow flex flex-col h-full">
-          <ChatHeader name={activeChatData?.name || ""} avatar={activeChatData?.avatar} onClose={handleCloseChat} />
-          <div className="flex-grow overflow-y-auto p-4">
-            <Message sender="Alice" timestamp="2 minutes ago" avatar="/placeholder.svg?height=40&width=40">
-              Hey, how&apos;s it going?
-            </Message>
-            <Message sender="You" timestamp="1 minute ago" isCurrentUser>
-              I&apos;m doing well, thanks for asking!
-            </Message>
-            <Message sender="Alice" timestamp="Just now" avatar="/placeholder.svg?height=40&width=40">
-              Great! Do you have time for a quick call later today?
-            </Message>
-          </div>
-          <ChatInput />
-        </div>
-      )}
-    </div>
-  )
-})
-Chat.displayName = "Chat"
+SendMessegeButton.displayName = "SendMessegeButton"
 
 export {
-  ChatItem,
+  Chat,
   ChatList,
-  ChatWindow,
+  ChatListItem,
+  ChatListItemProfileImage,
+  ChatListItemHeader,
+  ChatListItemLastMessegePreview,
+  ChatListItemTimeStamp,
+  ChatListItemUnreadCount,
+  ChatWrapper,
   ChatHeader,
+  ChatHeaderProfileImage,
+  ChatHeaderName,
+  ChatHeaderLastSeen,
+  CloseChat,
+  ChatContent,
+  Messege,
+  MessegeAuthorProfileImage,
+  MessegeContent,
   ChatInput,
-  Message,
-  ChatAvatar,
-  ChatItemHeader,
-  LastMessagePreview,
-  Time,
-  UnreadMessagesCount,
-  Sender,
-  MessageContent,
-  MessageInput,
-  SendButton,
+  MessegeInput,
+  SendMessegeButton,
 }
 
-
+export type { ChatData, ChatMessege }
 

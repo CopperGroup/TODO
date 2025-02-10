@@ -47,16 +47,6 @@ const taskSchema = new mongoose.Schema({
         ref: "Task",
     }
   ],
-  createdAt: {
-    type: Date,
-    default: Date.now,
-    required: [true, "Creation date is required"],
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
-    required: [true, "Creation date is required"],
-  },
   attachments: [
     {
       type: String,
@@ -87,7 +77,7 @@ const taskSchema = new mongoose.Schema({
     enum: ["Board", "Backlog"],
     required: [true, "Task location ('Board' | 'Backlog') is required"],
   }
-});
+}, { timestamps: true });
 
 type TaskType = InferSchemaType<typeof taskSchema> & { 
     _id: string, 

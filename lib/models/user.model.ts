@@ -40,6 +40,8 @@ const userSchema = new mongoose.Schema({
   ]
 });
 
+userSchema.index({ clerkId: 1 });
+
 type UserType = InferSchemaType<typeof userSchema> & { 
   _id: string,
   teams: string[]

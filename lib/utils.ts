@@ -32,3 +32,7 @@ export function getTextColorBasedOnBackground(hexColor: string): string {
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
+
+export function lowercaseFirstLetter(str: string) {
+  return str.charAt(0).toLowerCase() + str.slice(1);
+}
