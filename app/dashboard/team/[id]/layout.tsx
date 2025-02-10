@@ -3,7 +3,7 @@
 import { AdminBreadcrumb } from "@/components/admin-components/AdminBreadcrumb"
 import { AdminSidebar } from "@/components/admin-components/AdminSidebar"
 import { SidebarProvider } from "@/components/ui/sidebar"
-import { fetchUsersTeamsIdNameColorBoards } from "@/lib/actions/team.actions"
+import { fetchSidebarInfo } from "@/lib/actions/team.actions";
 import { currentUser } from "@clerk/nextjs/server"
 import { redirect } from "next/navigation";
 import type React from "react" // Added import for React
@@ -20,7 +20,7 @@ export default async function RootLayout({
 
   const clerkUser = await currentUser();
 
-  const { user, teams } = await fetchUsersTeamsIdNameColorBoards({ clerkId: clerkUser?.id})
+  const { user, teams } = await fetchSidebarInfo({ clerkId: clerkUser?.id})
 
   const currentTeam = await teams.find(team => team.teamId === teamId)
 

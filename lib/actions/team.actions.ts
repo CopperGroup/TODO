@@ -10,8 +10,8 @@ import { PopulatedTeamType } from "../types";
 import { revalidatePath } from "next/cache";
 import Comment from "../models/comment.model";
 import { redirect } from "next/navigation";
-import Chat from "../models/chat.model";
-import Messege from "../models/messege";
+import Chat, { ChatType } from "../models/chat.model";
+import Messege, { MessegeType } from "../models/messege";
 import mongoose, { ObjectId } from "mongoose";
 import { Types } from "mongoose";
 
@@ -134,7 +134,8 @@ export async function createTeam({ name, usersEmails, adminClerkId }: createTeam
       const welcomeMessege = await Messege.create([{ 
         content: "Thank you for choosing Kolos. We hope you will have a great time working with us!", 
         sender: systemUser._id, 
-        type: "Default" 
+        type: "Default", 
+        chat: systemChat[0]._id
       }], { session });
 
       systemChat[0].messeges.push(welcomeMessege[0]._id);
@@ -198,7 +199,7 @@ export async function fetchUsersTeams({ clerkId }: { clerkId: string | undefined
      throw new Error(`${error.message}`)
    }
 }
-export async function fetchUsersTeamsIdNameColorBoards(
+export async function fetchSidebarInfo(
   { clerkId }: { clerkId: string | undefined }
 ): Promise<{
   user: UserType;
@@ -208,6 +209,7 @@ export async function fetchUsersTeamsIdNameColorBoards(
     teamColor: string;
     boards: { boardId: string; name: string }[];
     members: { user: string; role: 'Admin' | 'Member' }[];
+    userUnreadMesseges: number,
   }[];
 }> {
   try {
@@ -224,12 +226,42 @@ export async function fetchUsersTeamsIdNameColorBoards(
     }
 
     const teams = await Team.find({ "members.user": user._id })
-      .populate('boards', '_id name')
+      .populate(
+        [
+          {
+            path: 'boards', 
+            select: '_id name'
+          },
+          {
+            path: 'chats',
+            populate: {
+              path: 'messeges'
+            }
+          }
+        ]
+      )
       .exec();
 
-    return {
-      user,
-      teams: teams.map((team) => ({
+    const teamsInfo = teams.map((team) => {
+      // Filter chats where the current user is in the chat's people array
+      const relevantChats = team.chats.filter((chat: ChatType) =>
+        chat.people.map((p) => p.toString()).includes(user._id.toString())
+      );
+
+      let totalUnreadMessages = 0;
+
+      // Count unread messages for each relevant chat
+      relevantChats.forEach((chat: (ChatType & { messeges: MessegeType[] })) => {
+        const unreadMessages = chat.messeges.filter(
+          (message: MessegeType) =>
+            !message.readBy.includes(user._id.toString()) && // User hasn't read the message
+            message.sender !== user._id.toString() // Exclude messages sent by the user
+        );
+
+        totalUnreadMessages += unreadMessages.length;
+      });
+
+      return {
         teamId: team._id.toString(),
         name: team.name,
         teamColor: team.themeColor,
@@ -237,12 +269,15 @@ export async function fetchUsersTeamsIdNameColorBoards(
           boardId: board._id.toString(),
           name: board.name,
         })),
-        members: team.members.map((member: { user: string, role: "Admin" | "Member" }) => ({
+        members: team.members.map((member: { user: string; role: "Admin" | "Member" }) => ({
           user: member.user,
-          role: member.role as 'Admin' | 'Member',
+          role: member.role as "Admin" | "Member",
         })),
-      })),
-    };
+        userUnreadMesseges: totalUnreadMessages,
+      };
+    });
+
+    return { user, teams: teamsInfo };
   } catch (error: any) {
     throw new Error(`Error fetching sidebar info: ${error.message}`);
   }
@@ -318,18 +353,24 @@ export async function joinTeam({ clerkId, teamId }: { clerkId?: string, teamId: 
           </div>
         `;
         
+        
+        const adminId = team.members.find((member: TeamType["members"][number]) => member.role === 'Admin').user;
+        
+        const chat = await Chat.findOne({ team: team._id, people: [systemUser._id, adminId] }).session(session);
+
+        if(!chat) {
+          throw new Error('Systme-Admin chat not found')
+        }
+
         const requestMessege = new Messege({
           content: messegeContent,
           sender: systemUser._id,
           type: "Request",
           readBy: [],
+          chat: chat._id
         });
 
         await requestMessege.save({ session });
-
-        const adminId = team.members.find((member: TeamType["members"][number]) => member.role === 'Admin').user;
-
-        const chat = await Chat.findOne({ team: team._id, people: [systemUser._id, adminId] }).session(session);
 
         if (chat) {
           chat.messeges.push(requestMessege._id);
@@ -341,7 +382,7 @@ export async function joinTeam({ clerkId, teamId }: { clerkId?: string, teamId: 
 
         await team.save({ session });
         await user.save({ session });
-        
+
         await session.commitTransaction();
         session.endSession();
 

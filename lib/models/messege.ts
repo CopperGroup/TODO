@@ -17,6 +17,14 @@ const messegeSchema = new mongoose.Schema({
     readBy: [
         {
             type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        }
+    ],
+    chat: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Chat',
+            required: [true, 'Messege must belong to chat']
         }
     ]
 

@@ -37,7 +37,7 @@ import { getTextColorBasedOnBackground } from "@/lib/utils"
 import { UserType } from "@/lib/models/user.model"
 
 
-export function AdminSidebar({ user, teams }: { user: UserType, teams: { teamId: string, name: string, teamColor: string, boards: { boardId: string; name: string }[], members: { user: string, role: "Admin" | "Member" }[] }[]}) {
+export function AdminSidebar({ user, teams }: { user: UserType, teams: { teamId: string, name: string, teamColor: string, boards: { boardId: string; name: string }[], members: { user: string, role: "Admin" | "Member" }[], userUnreadMesseges: number }[]}) {
   const router = useRouter();
   const pathname = usePathname();
   const parts = pathname.split('/'); 
@@ -65,6 +65,17 @@ export function AdminSidebar({ user, teams }: { user: UserType, teams: { teamId:
     }
   }, [selectedTeam])
 
+  const setUnreadMessagesToZero = () => {
+    setSelectedTeam((prev) => {
+      if (!prev) return prev; // Ensure prev exists
+      return {
+        ...prev,
+        userUnreadMesseges: 0,
+      };
+    });
+  };
+  
+  
   return (
     <Sidebar className="border-r border-gray-200 bg-white">
       <SidebarHeader className="p-4">
@@ -147,9 +158,24 @@ export function AdminSidebar({ user, teams }: { user: UserType, teams: { teamId:
                     </DropdownMenu>
                   ) : (
                     <SidebarMenuButton asChild className="hover:bg-gray-100 transition-colors duration-200">
-                      <Link href={item.url} className="flex items-center gap-3">
-                        <item.icon className="h-5 w-5 text-gray-600" />
-                        <span className="font-medium">{item.title}</span>
+                      <Link 
+                       href={item.url} 
+                       className="flex items-center justify-between w-full"
+                       onClick={() => {
+                        if (item.title === "Messeges" && selectedTeam && selectedTeam?.userUnreadMesseges > 0) {
+                          setUnreadMessagesToZero();
+                        }
+                      }} 
+                      >
+                        <div className="flex items-center gap-3">
+                          <item.icon className="h-5 w-5 text-gray-600" />
+                          <span className="font-medium">{item.title}</span>
+                        </div>
+                        {item.title === "Messeges" && selectedTeam && selectedTeam.userUnreadMesseges > 0 && (
+                          <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                            {selectedTeam.userUnreadMesseges}
+                          </span>
+                        )}
                       </Link>
                     </SidebarMenuButton>
                   )}

@@ -26,7 +26,10 @@ const chatSchema = new mongoose.Schema({
 
 }, { timestamps: true })
 
-type ChatType = InferSchemaType<typeof chatSchema> & { _id: string};
+type ChatType = InferSchemaType<typeof chatSchema> & { 
+    _id: string,
+    people: string[]
+};
 
 const Chat = mongoose.models.Chat || mongoose.model("Chat", chatSchema);
 
