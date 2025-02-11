@@ -67,7 +67,7 @@ export default function MembersActionButtons({ teamId, memberId, role, isAdmin }
         <DialogDescription className="text-neutral-400">
           Are you sure you want to remove this member from the team?
         </DialogDescription>
-        <p className="text-neutral-400">Type 'confirm' to proceed:</p>
+        <p className="text-neutral-400">Type &apos;confirm&apos; to proceed:</p>
         <Input
           value={removeConfirmation}
           onChange={(e) => setRemoveConfirmation(e.target.value)}
