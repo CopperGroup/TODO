@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { useForm } from "react-hook-form"
 import { PlusCircle } from "lucide-react"
 import { createColumn } from "@/lib/actions/column.action"
+import { useTeamPlan } from "@/app/dashboard/team/[id]/TeamPlanProvider"
 
 interface Column {
   _id: string

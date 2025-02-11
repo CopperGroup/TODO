@@ -37,7 +37,7 @@ import { getTextColorBasedOnBackground } from "@/lib/utils"
 import { UserType } from "@/lib/models/user.model"
 
 
-export function AdminSidebar({ user, teams }: { user: UserType, teams: { teamId: string, name: string, teamColor: string, boards: { boardId: string; name: string }[], members: { user: string, role: "Admin" | "Member" }[], userUnreadMesseges: number }[]}) {
+export function AdminSidebar({ user, teams }: { user: UserType, teams: { teamId: string, name: string, teamColor: string, boards: { boardId: string; name: string }[], members: { user: string, role: "Admin" | "Member" }[], userUnreadMesseges: number, plan: string }[]}) {
   const router = useRouter();
   const pathname = usePathname();
   const parts = pathname.split('/'); 
@@ -51,9 +51,9 @@ export function AdminSidebar({ user, teams }: { user: UserType, teams: { teamId:
   
   const navItems = [
     { title: "Summary", icon: PieChart, url: `/dashboard/team/${selectedTeam?.teamId}` },
-    { title: "Tasks", icon: ListTodo, url: "/dashboard/tasks" },
+    { title: "Tasks", icon: ListTodo, url: `/dashboard/team/${selectedTeam?.teamId}/tasks` },
     { title: "Boards", icon: LayoutDashboard, url: "/dashboard/boards" },
-    { title: "Members", icon: Users, url: "/dashboard/members" },
+    { title: "Members", icon: Users, url: `/dashboard/team/${selectedTeam?.teamId}/members` },
     { title: "Messeges", icon: Inbox, url: `/dashboard/team/${selectedTeam?.teamId}/messeges`}
   ]
 
@@ -97,6 +97,11 @@ export function AdminSidebar({ user, teams }: { user: UserType, teams: { teamId:
                     /> */}
                       <div className="w-8 h-8 text-lg font-semibold text-center rounded-md pt-[1px]" style={{ background: selectedTeam?.teamColor}}><span style={{ color: getTextColorBasedOnBackground(selectedTeam?.teamColor || "#ffffff")}}>{selectedTeam?.name.slice(0, 1)}</span></div>
                     <span className="font-semibold">{selectedTeam?.name}</span>
+                    {selectedTeam?.plan === "basic_plan" ? (
+                      <span className="text-xs text-gray-700 font-medium mb-2 -ml-2">Basic</span>
+                    ): (
+                      <span className="text-xs coppergroup-gradient-text font-bold mb-2 -ml-2">Pro</span>
+                    )}
                   </div>
                   <ChevronsUpDown className="ml-auto h-4 w-4 text-gray-500" />
                 </SidebarMenuButton>
@@ -149,10 +154,19 @@ export function AdminSidebar({ user, teams }: { user: UserType, teams: { teamId:
                           </DropdownMenuItem>
                         ))}
                         <DropdownMenuItem asChild>
-                          <Link href={`/dashboard/team/${selectedTeam?.teamId}/board/new`} className="flex items-center gap-2 text-blue-600 cursor-pointer">
-                            <PlusCircle className="h-4 w-4" />
-                            Create New Board
-                          </Link>
+                          {selectedTeam?.plan === "basic_plan" ? (
+                              <Link href={`/dashboard/team/${selectedTeam?.teamId}/plans`} className="flex items-center gap-2 text-blue-600/40 cursor-pointer hover:text-blue-500 focus:text-blue-500">
+                                <PlusCircle className="h-4 w-4" />
+                                Create New Board <span className="coppergroup-gradient-text font-bold">Pro</span>
+                              </Link>
+                            ): (
+                              <Link href={`/dashboard/team/${selectedTeam?.teamId}/board/new`} className="flex items-center gap-2 text-blue-600 cursor-pointer">
+                                <PlusCircle className="h-4 w-4" />
+                                Create New Board 
+                              </Link>
+                            )
+
+                          }
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

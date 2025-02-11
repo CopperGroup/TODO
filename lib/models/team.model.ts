@@ -51,7 +51,11 @@ const teamSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Chat'
     },
-  ]
+  ],
+  plan: {
+    type: String,
+    required: [true, "Team must have a billing plan"]
+  }
 });
 
 type TeamType = InferSchemaType<typeof teamSchema> & { 

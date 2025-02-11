@@ -27,6 +27,7 @@ import { Send } from "lucide-react"
 import moment from "moment"
 import { handleMessegesRead } from "@/lib/actions/messeges.actions"
 import MessegeItem from "./Messege"
+import Link from "next/link"
 
 export default function Chats({ stringifiedTeamData, clerkId }: { stringifiedTeamData: string; clerkId: string }) {
   const [teamData, setTeamData] = useState<TeamPopulatedChatsType>(JSON.parse(stringifiedTeamData))
@@ -170,7 +171,12 @@ export default function Chats({ stringifiedTeamData, clerkId }: { stringifiedTea
         </ChatWrapper>
       ) : (
         <div className="w-3/4 flex items-center justify-center text-gray-500 bg-white">
-          <p className="text-xl font-semibold">Select a chat to start messaging</p>
+          {teamData.plan === 'basic_plan' ? (
+            <Link href={`/dashboard/team/${teamData._id}/plans`} className="text-xl font-semibold">Upgrade to<span className="coppergroup-gradient-text font-bold ml-2">Pro</span></Link>
+            ): (
+              <p className="text-xl font-semibold">Select a chat to start messaging</p>
+            )
+          }
         </div>
       )}
     </Chat>

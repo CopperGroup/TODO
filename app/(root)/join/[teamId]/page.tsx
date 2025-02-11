@@ -1,14 +1,21 @@
 import JoinTeamAnimatedBackground from "@/components/backgrounds/JoinTeamAnimatedBackground";
 import { JoinTeamButton } from "@/components/interface/JoinTeamButton";
 import { fetchTeamName } from "@/lib/actions/team.actions";
+import { currentUser } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 
 export default async function JoinTeamPage({ params }: { params: { teamId: string } }) {
+  const user = await currentUser();
+
   if (!params.teamId) {
     return null;
   }
 
-  const teamName = await fetchTeamName({ teamId: params.teamId })
+  const {teamName, triggerRedirect }= await fetchTeamName({ teamId: params.teamId, clerkId: user?.id})
 
+  if(triggerRedirect) {
+    redirect(`/dashboard/team/${params.teamId}`)
+  }
   const description =`You're just one step away from joining the ${teamName} team! By joining this team, you'll gain access to all its boards, tasks, and collaborative tools.`;
 
   return (

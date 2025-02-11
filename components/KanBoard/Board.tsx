@@ -10,6 +10,9 @@ import { motion } from "framer-motion"
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { changeBoardColumnsOrder } from "@/lib/actions/board.actions";
+import Team from "@/lib/models/team.model";
+import { Button } from "../ui/button";
+import Link from "next/link";
 
 function debounce(func: Function, wait: number) {
   let timeout: NodeJS.Timeout
@@ -121,13 +124,9 @@ const Board = ({ stringifiedBoard }: { stringifiedBoard: string }) => {
       
       const indicators = getColumnIndicators();
 
-      console.log(indicators)
       const { element } = getNearestColumnIndicator(e, indicators);
       
-      console.log( element )
       const beforeId = element.dataset.beforecolumn || "-1";
-
-      console.log(beforeId)
 
       if(beforeId !== columnId) {
         let copy = [...columns]
@@ -233,7 +232,16 @@ const Board = ({ stringifiedBoard }: { stringifiedBoard: string }) => {
           }
           <div className="pr-10">
             <div className="w-full flex justify-end">
-              <AddColumn boardId={board._id} setState={setColumns as unknown as React.Dispatch<SetStateAction<ColumnType[]>>}/> 
+              {board.team.plan === "basic_plan" ? (
+                <div className="w-full">
+                  <Button className="w-full p-0 hover:bg-transparent" variant='ghost'>
+                    <Link href={`/dashboard/team/${board.team._id}/plans`} className="w-full h-full flex items-center justify-center text-center text-neutral-400">Add Column <span className="coppergroup-gradient-text font-bold ml-2"> Pro</span></Link>
+                  </Button>
+                </div>
+              ): (
+                <AddColumn boardId={board._id} setState={setColumns as unknown as React.Dispatch<SetStateAction<ColumnType[]>>}/> 
+              )
+              }
                 {/* TODO: fix state */}
             </div>
             <BurnBarrel cards={board.tasks} setCards={setCards}/>

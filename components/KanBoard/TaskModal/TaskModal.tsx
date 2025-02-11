@@ -102,7 +102,9 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, isOpen, onClose, onUpdate, 
       onUpdate({ ...localTask, assignedTo: localTask.assignedTo.concat([user])})
 
       try {
-        const updatedIds = [...localTask.assignedTo.map((as) => as._id), user._id];
+        const updatedIds = [...localTask.assignedTo.map((as) => as._id)];
+
+        console.log(updatedIds)
         await assignTask({ taskId: task._id, assigneesIds: updatedIds }, 'json');
       } catch (error) {
         console.error("Failed to assign task:", error);

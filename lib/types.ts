@@ -1,3 +1,8 @@
+
+import { TeamType } from "./models/team.model";
+import { TaskType } from "./models/task.model";
+import { ColumnType } from "./models/column.model";
+import { BoardType } from "./models/board.model";
 import  { UserType as User } from "@/lib/models/user.model"
 
 export type PopulatedTeamType = {
@@ -43,6 +48,7 @@ export type PopulatedTeamType = {
     }[];
     invitedMembers: string[]; // List of emails for invited members
     themeColor: string;
+    plan: string
   };
 
 
@@ -58,9 +64,6 @@ export type Column = {
   name: string
   textColor: string
 }
-
-import { Types } from "mongoose";
-import { TeamType } from "./models/team.model";
 
 // Comment Type (Populated)
 export type PopulatedCommentType = {
@@ -139,4 +142,20 @@ export type TeamPopulatedChatsType = Omit<TeamType, "chats"> & {
     }[];
     people: User[];
   }[];
+};
+
+export type TeamTasks = TeamType & {
+  members: {
+    user: UserType;
+    role: "Admin" | "Member";
+  }[];
+  tasks: (TaskType & {
+    author: User;
+    column: ColumnType;
+    board: BoardType & { columns: ColumnType[] };
+    assignedTo: User[];
+    parentId: TaskType | null;
+    subTasks: TaskType[];
+    linkedTasks: TaskType[];
+  })[];
 };

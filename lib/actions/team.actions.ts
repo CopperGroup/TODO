@@ -3,10 +3,10 @@
 import Team, { TeamType } from "../models/team.model";
 import User, { UserType } from "../models/user.model";
 import { connectToDB } from "../mongoose";
-import Board from "../models/board.model";
-import Column from "../models/column.model";
-import Task from "../models/task.model";
-import { PopulatedTeamType } from "../types";
+import Board, { BoardType } from "../models/board.model";
+import Column, { ColumnType } from "../models/column.model";
+import Task, { TaskType } from "../models/task.model";
+import { PopulatedTeamType, TeamTasks } from "../types";
 import { revalidatePath } from "next/cache";
 import Comment from "../models/comment.model";
 import { redirect } from "next/navigation";
@@ -48,7 +48,8 @@ export async function createTeam({ name, usersEmails, adminClerkId }: createTeam
     const createdTeam = await Team.create([{ 
       name, 
       members: teamMembers, 
-      invitedMembers: usersEmails 
+      invitedMembers: usersEmails,
+      plan: 'basic_plan'
     }], { session });
 
     for (const user of existingUsers) {
@@ -210,6 +211,7 @@ export async function fetchSidebarInfo(
     boards: { boardId: string; name: string }[];
     members: { user: string; role: 'Admin' | 'Member' }[];
     userUnreadMesseges: number,
+    plan: string
   }[];
 }> {
   try {
@@ -274,6 +276,7 @@ export async function fetchSidebarInfo(
           role: member.role as "Admin" | "Member",
         })),
         userUnreadMesseges: totalUnreadMessages,
+        plan: team.plan
       };
     });
 
@@ -283,7 +286,7 @@ export async function fetchSidebarInfo(
   }
 }
 
-export async function fetchTeamName({ teamId }: { teamId: string} ) {
+export async function fetchTeamName({ teamId, clerkId }: { teamId: string, clerkId?: string } ) {
   try {
     connectToDB()
 
@@ -291,7 +294,20 @@ export async function fetchTeamName({ teamId }: { teamId: string} ) {
     
     if(!team) redirect("/")
 
-    return team.name
+    let triggerRedirect = false;
+
+    console.log(clerkId)
+    if(clerkId) {
+      const user = await User.findOne({ clerkId })
+
+      console.log(user)
+      if(team.members.map((member: { user: string }) => member.user.toString()).includes(user._id.toString())) {
+        console.log('Should be redirected')
+        triggerRedirect = true
+      }
+    }
+       
+    return { teamName: team.name, triggerRedirect }
   } catch (error: any) {
     throw new Error(`Error fetching team name: ${error.message}`)
   }
@@ -481,5 +497,291 @@ export async function performRquestAction({
     await session.abortTransaction();
     session.endSession();
     throw new Error(`Error processing request action: ${error.message}`);
+  }
+}
+
+export async function fetchTeamMembers({ teamId }: { teamId: string }): Promise<TeamType & { members: { user: UserType, role: 'Admin' | 'Member' }[] }>;
+export async function fetchTeamMembers({ teamId }: { teamId: string }, type: 'json'): Promise<string>;
+
+export async function fetchTeamMembers({ teamId }: { teamId: string }, type?: 'json') {
+   try {
+    connectToDB();
+
+    const team = await Team.findById(teamId).populate({
+      path: 'members.user'
+    })
+
+    if(!team) {
+      throw new Error("Team not found ")
+    }
+
+
+    if(type === 'json'){
+      return JSON.stringify(team)
+    } else {
+      return team
+    }
+   } catch (error: any) {
+     throw new Error(`Erorr fetching team members ${error.message}`)
+   }
+}
+
+export async function addInvitees({ teamId, invitedEmailsList }: { teamId: string, invitedEmailsList: string[] }): Promise<void> {
+  try {
+    connectToDB()
+
+    const team = await Team.findByIdAndUpdate(
+      teamId,
+      {
+        $addToSet: { invitedMembers: { $each: invitedEmailsList } }
+      }
+    )
+
+    if (!team) {
+      throw new Error("Team not found");
+    }
+  } catch (error: any) {
+    throw new Error(`Error addingid invited users: ${error.message}`)
+  }
+}
+
+export async function kickUserOut({ teamId, userId }: { teamId: string, userId: string }) {
+  connectToDB();
+
+  const session = await mongoose.startSession();
+  try {
+    
+    session.startTransaction();
+    const team = await Team.findById(teamId).session(session).populate("members.user");
+    if (!team) throw new Error("Team not found");
+
+    // Find the team admin
+    const teamAdmin = team.members.find((member: any) => member.role === "Admin");
+    if (!teamAdmin) throw new Error("Team admin not found");
+
+    // Find the user to be kicked out
+    const user = await User.findById(userId).session(session);
+    if (!user) throw new Error("User not found");
+
+    // Update all tasks created by the user: Change author to team admin
+    await Task.updateMany(
+      { author: user._id, team: teamId },
+      { author: teamAdmin.user._id },
+      { session }
+    );
+
+    // Remove the user from assignedTo in all tasks for this team
+    await Task.updateMany(
+      { team: teamId },
+      { $pull: { assignedTo: user._id } },
+      { session }
+    );
+
+    // Remove the user from the team members
+    await Team.findByIdAndUpdate(teamId, {
+      $pull: { members: { user: user._id } },
+    }, { session });
+
+    // Remove the team from the user's teams array
+    await User.findByIdAndUpdate(user._id, {
+      $pull: { teams: teamId },
+    }, { session });
+
+    // Commit the transaction
+    await session.commitTransaction();
+  } catch (error: any) {
+    // If any error happens, abort the transaction
+    await session.abortTransaction();
+    throw new Error(`Error: ${error.message}`);
+  } finally {
+    // End the session
+    session.endSession();
+
+    revalidatePath(`/dashboard/team/${teamId}/members`)
+  }
+}
+
+
+
+export async function fetchTeamTasks({ teamId }: { teamId: string }): Promise<TeamTasks>;
+export async function fetchTeamTasks({ teamId }: { teamId: string }, type: 'json'): Promise<string>;
+
+export async function fetchTeamTasks({ teamId }: { teamId: string }, type?: 'json') {
+   try {
+      
+    connectToDB();
+
+    const team = await Team.findById(teamId).populate(
+      [
+        {
+          path: 'members.user',
+        },
+        {
+          path: 'tasks',
+          populate: [
+            {
+              path: 'author'
+            },
+            {
+              path: 'column',
+            },
+            {
+              path: 'board',
+              populate: {
+                path: 'columns'
+              }
+            }, 
+            {
+              path: 'assignedTo'
+            },
+            {
+              path: 'parentId'
+            },
+            {
+              path: 'subTasks'
+            },
+            {
+              path: 'linkedTasks'
+            },
+          ]
+        }
+      ]
+    )
+
+    if(!team) {
+      throw new Error('Team not found ')
+    }
+    if(type === 'json'){
+      return JSON.stringify(team)
+    } else {
+      return team
+    }
+   } catch (error: any) {
+     throw new Error(`${error.message}`)
+   }
+}
+
+export async function calculateSummary({ teamId }: { teamId: string }) {
+  try {
+    // Connect to DB
+    connectToDB();
+
+    // Step 1: Fetch team and deep populate boards, columns, and tasks in one query
+    const team = await Team.findById(teamId)
+      .populate({
+        path: "boards",  // Populate boards
+        populate: [
+          {
+            path: "tasks", 
+            populate: {
+              path: "column",  // Populate column in task (to get column names like 'Done', 'TODO', etc.)
+              model: 'Column'
+            },
+          },
+          {
+            path: 'columns'
+          }
+        ]
+      })
+      .exec();
+
+    if (!team) {
+      throw new Error("Team not found");
+    }
+
+    // Step 2: Count active members (those with a role of 'Admin' or 'Member')
+    const activeMembers = team.members.filter((member: any) => member.role === "Admin" || member.role === "Member").length;
+
+    // Initialize variables to hold totals
+    let totalTasks = 0;
+    let totalColumns = 0;
+    let completedTasks = 0;
+    let backlogTasks = 0;
+    let todoTasks = 0;
+    let inProgressTasks = 0;
+
+    // Initialize variables for other columns
+    let otherColumnsTasks: Record<string, number> = {};
+
+    // Step 3: Loop through all boards and fetch columns and tasks already populated
+    for (const board of team.boards) {
+      // Increment the total number of columns and tasks
+      totalColumns += board.columns.length;
+      totalTasks += board.tasks.length;
+
+      // Step 4: Calculate the task totals per column and overall task completion
+      for (const task of board.tasks) {
+        if (task.column) {
+          // Column is already populated, so we can access the name directly
+          const columnName = task.column.name;
+
+          // Increment task counters based on the column
+          if (columnName === "Done") {
+            completedTasks++;
+          } else if (columnName === "Backlog") {
+            backlogTasks++;
+          } else if (columnName === "TODO") {
+            todoTasks++;
+          } else if (columnName === "In Progress") {
+            inProgressTasks++;
+          } else {
+            // Handle other columns dynamically
+            if (!otherColumnsTasks[columnName]) {
+              otherColumnsTasks[columnName] = 0;
+            }
+            otherColumnsTasks[columnName]++;
+          }
+        }
+      }
+    }
+
+    // Calculate completion rate
+    const completionRate = totalTasks > 0 ? ((completedTasks / totalTasks) * 100).toFixed(1) : "0.0";
+
+    return {
+      totalTasks,
+      totalColumns,
+      completedTasks,
+      backlogTasks,
+      todoTasks,
+      inProgressTasks,
+      activeMembers,  // Add active members to the summary
+      completionRate,
+      otherColumnsTasks,  // Include tasks in other columns
+    };
+  } catch (error: any) {
+    console.error("Error calculating summary:", error);
+    throw new Error(`Error fetching summary: ${error.message}`);
+  }
+}
+
+
+export async function getTeamPlan({ teamId }: { teamId: string }): Promise<string> {
+  try {
+    connectToDB()
+
+    const team = await Team.findById(teamId);
+
+    if(!team) {
+      throw new Error('Team not found ')
+    }
+
+    return team.plan
+  } catch (error: any) {
+    throw new Error(`${error.message}`)
+  }
+}
+
+export async function updateTeamPlan({ teamId, planName }: { teamId: string, planName: string }) {
+  try {
+    connectToDB();
+
+    await Team.findByIdAndUpdate(
+      teamId, {
+        plan: planName
+      }
+    )
+  } catch (error: any) {
+    throw new Error(`${error.message}`)
   }
 }

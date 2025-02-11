@@ -7,6 +7,7 @@ import { fetchSidebarInfo } from "@/lib/actions/team.actions";
 import { currentUser } from "@clerk/nextjs/server"
 import { redirect } from "next/navigation";
 import type React from "react" // Added import for React
+import { TeamPlanProvider } from "./TeamPlanProvider";
 
 export default async function RootLayout({
   children,
@@ -31,15 +32,17 @@ export default async function RootLayout({
 
   return (
       <section className="flex h-screen overflow-hidden">
-        <SidebarProvider>
-            <AdminSidebar teams={teams} user={user}/>
-            <main className="w-full flex-1 overflow-auto custom-scrollbar-blue">
-              <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b px-4 bg-white">
-              <AdminBreadcrumb teams={teams} />
-              </header>
-              <div className="flex-1">{children}</div>
-          </main>
-        </SidebarProvider>
+        <TeamPlanProvider>
+          <SidebarProvider>
+              <AdminSidebar teams={teams} user={user}/>
+              <main className="w-full flex-1 overflow-auto custom-scrollbar-blue">
+                <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b px-4 bg-white">
+                <AdminBreadcrumb teams={teams} />
+                </header>
+                <div className="flex-1">{children}</div>
+            </main>
+          </SidebarProvider>
+        </TeamPlanProvider>
       </section>
   )
 }

@@ -126,13 +126,13 @@ const Card = ({
                   ))}
                   {task.assignedTo.length > 2 && (
                     <Avatar className="w-6 h-6 bg-zinc-700 text-white border-2 border-white">
-                      <AvatarFallback>
                         {task.assignedTo.length === 3 ? (
                           <AvatarImage src={task.assignedTo[2].profilePicture} />
                         ) : (
+                          <AvatarFallback>
                           `+${task.assignedTo.length - 2}`
+                          </AvatarFallback>
                         )}
-                      </AvatarFallback>
                     </Avatar>
                   )}
                 </div>
