@@ -16,15 +16,14 @@ import mongoose, { ObjectId } from "mongoose";
 import { Types } from "mongoose";
 
 type createTeamParams = {
-   name: string
-   usersEmails: string[],
-   adminClerkId?: string,
-   plan: string,
-   themeColor: string
+  name: string
+  usersEmails: string[],
+  adminClerkId?: string,
+  plan: string,
 }
 
 
-export async function createTeam({ name, usersEmails, adminClerkId, plan, themeColor }: createTeamParams, type?: 'json') {
+export async function createTeam({ name, usersEmails, adminClerkId, plan }: createTeamParams, type?: 'json') {
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -51,7 +50,6 @@ export async function createTeam({ name, usersEmails, adminClerkId, plan, themeC
       name, 
       members: teamMembers, 
       invitedMembers: usersEmails,
-      themeColor: themeColor,
       plan
     }], { session });
 
