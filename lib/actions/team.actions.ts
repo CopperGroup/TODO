@@ -146,36 +146,6 @@ export async function createTeam({ name, usersEmails, adminClerkId, plan, themeC
       await systemChat[0].save({ session });
 
       createdTeam[0].chats.push(systemChat[0]._id);
-
-      for (let i = 0; i < teamMembers.length; i++) {
-        for (let j = i + 1; j < teamMembers.length; j++) {
-          const member1 = teamMembers[i].user;
-          const member2 = teamMembers[j].user;
-      
-          // Check if a chat already exists between these two members
-          const existingChat = await Chat.findOne({
-            team: createdTeam[0]._id,
-            people: { $all: [member1, member2] },
-          }).session(session);
-      
-          if (!existingChat) {
-
-            const newChat = await Chat.create(
-              [
-                {
-                  name: 'Private Chat',
-                  team: createdTeam[0]._id,
-                  people: [member1, member2],
-                  messages: [],
-                },
-              ],
-              { session }
-            );
-      
-            createdTeam[0].chats.push(newChat[0]._id);
-          }
-        }
-      }
       
       await createdTeam[0].save({ session });
     }
