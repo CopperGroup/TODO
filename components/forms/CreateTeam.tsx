@@ -102,7 +102,7 @@ export default function CreateTeamPage() {
   const onSubmit = async (data: FormData) => {
     setIsCreating(true)
     try {
-      const result = await createTeam({ 
+      await createTeam({ 
         name: data.teamName,
         usersEmails: data.members.map(m => m.value),
         themeColor: data.themeColor,
