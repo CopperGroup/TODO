@@ -30,133 +30,133 @@ export async function createTeam({ name, usersEmails, themeColor, adminId, plan 
 
   console.log( name, usersEmails, adminId, themeColor, plan )
   try {
-    await connectToDB();
+  //   await connectToDB();
 
-    // const existingUsers = await User.find({ email: { $in: usersEmails } }).session(session);
+  //   // const existingUsers = await User.find({ email: { $in: usersEmails } }).session(session);
 
-    const admin = await User.findById(adminId).session(session);
+  //   const admin = await User.findById(adminId).session(session);
 
-    if (!admin) {
-      throw new Error(`Error creating team, no admin user found`);
-    }
+  //   if (!admin) {
+  //     throw new Error(`Error creating team, no admin user found`);
+  //   }
 
-    // const teamMembers = [
-    //   ...existingUsers.map((user) => ({ user: user._id, role: 'Member' })),
-    //   { user: admin._id, role: 'Admin' }
-    // ];
+  //   // const teamMembers = [
+  //   //   ...existingUsers.map((user) => ({ user: user._id, role: 'Member' })),
+  //   //   { user: admin._id, role: 'Admin' }
+  //   // ];
 
-    const createdTeam = await Team.create([{ 
-      name, 
-      members: [{ user: admin._id, role: 'Admin' }], 
-      themeColor,
-      invitedMembers: usersEmails,
-      plan: plan
-    }], { session });
+  //   const createdTeam = await Team.create([{ 
+  //     name, 
+  //     members: [{ user: admin._id, role: 'Admin' }], 
+  //     themeColor,
+  //     invitedMembers: usersEmails,
+  //     plan: plan
+  //   }], { session });
 
-    // for (const user of existingUsers) {
-    //   user.teams.push(createdTeam[0]._id);
-    //   await user.save({ session });
+  //   // for (const user of existingUsers) {
+  //   //   user.teams.push(createdTeam[0]._id);
+  //   //   await user.save({ session });
 
-    admin.teams.push(createdTeam[0]._id);
-    await admin.save({ session });
+  //   admin.teams.push(createdTeam[0]._id);
+  //   await admin.save({ session });
 
-    const firstBoard = await Board.create([{ 
-      name: 'Kolos 1', 
-      team: createdTeam[0]._id 
-    }], { session });
+  //   const firstBoard = await Board.create([{ 
+  //     name: 'Kolos 1', 
+  //     team: createdTeam[0]._id 
+  //   }], { session });
 
-    if (firstBoard) {
-      const columns = [
-        { name: "Backlog", textColor: "#737373", board: firstBoard[0]._id },
-        { name: "TODO", textColor: "#fef08a", board: firstBoard[0]._id },
-        { name: "In Progress", textColor: "#bfdbfe", board: firstBoard[0]._id },
-        { name: "Done", textColor: "#a7f3d0", board: firstBoard[0]._id }
-      ];
+  //   if (firstBoard) {
+  //     const columns = [
+  //       { name: "Backlog", textColor: "#737373", board: firstBoard[0]._id },
+  //       { name: "TODO", textColor: "#fef08a", board: firstBoard[0]._id },
+  //       { name: "In Progress", textColor: "#bfdbfe", board: firstBoard[0]._id },
+  //       { name: "Done", textColor: "#a7f3d0", board: firstBoard[0]._id }
+  //     ];
 
-      const firstColumns = await Column.insertMany(columns, { session });
-      const TODOColumn = firstColumns.find((column) => column.name === "TODO");
+  //     const firstColumns = await Column.insertMany(columns, { session });
+  //     const TODOColumn = firstColumns.find((column) => column.name === "TODO");
 
-      const exampleTask = {
-        description: "Meet Copper Group Kolos board",
-        board: firstBoard[0]._id,
-        author: admin._id,
-        column: TODOColumn._id,
-        assignedTo: [admin._id],
-        parentId: null,
-        subTasks: [],
-        linkedTasks: [],
-        comments: [],
-        team: createdTeam[0]._id,
-        type: "Issue",
-        location: 'Board'
-      };
+  //     const exampleTask = {
+  //       description: "Meet Copper Group Kolos board",
+  //       board: firstBoard[0]._id,
+  //       author: admin._id,
+  //       column: TODOColumn._id,
+  //       assignedTo: [admin._id],
+  //       parentId: null,
+  //       subTasks: [],
+  //       linkedTasks: [],
+  //       comments: [],
+  //       team: createdTeam[0]._id,
+  //       type: "Issue",
+  //       location: 'Board'
+  //     };
 
-      const firstTask = await Task.create([exampleTask], { session });
-      if (firstTask) {
-        const firstComment = await Comment.create([{ 
-          content: "Move to DONE, when finished😉", 
-          author: admin._id, 
-          task: firstTask[0]._id 
-        }], { session });
+  //     const firstTask = await Task.create([exampleTask], { session });
+  //     if (firstTask) {
+  //       const firstComment = await Comment.create([{ 
+  //         content: "Move to DONE, when finished😉", 
+  //         author: admin._id, 
+  //         task: firstTask[0]._id 
+  //       }], { session });
 
-        firstTask[0].comments.push(firstComment[0]._id);
-        await firstTask[0].save({ session });
+  //       firstTask[0].comments.push(firstComment[0]._id);
+  //       await firstTask[0].save({ session });
 
-        firstBoard[0].tasks.push(firstTask[0]._id);
-        createdTeam[0].tasks.push(firstTask[0]._id);
-      }
+  //       firstBoard[0].tasks.push(firstTask[0]._id);
+  //       createdTeam[0].tasks.push(firstTask[0]._id);
+  //     }
 
-      firstBoard[0].columns = firstColumns;
-      await firstBoard[0].save({ session });
+  //     firstBoard[0].columns = firstColumns;
+  //     await firstBoard[0].save({ session });
 
-      createdTeam[0].boards.push(firstBoard[0]._id);
-    }
+  //     createdTeam[0].boards.push(firstBoard[0]._id);
+  //   }
 
-    let systemUser = await User.findOne({ email: "system@kolos.com" }).session(session);
+  //   let systemUser = await User.findOne({ email: "system@kolos.com" }).session(session);
 
-    if (!systemUser) {
-      systemUser = await User.create([{
-        name: "Kolos AI",
-        email: "system@kolos.com",
-        clerkId: "system",
-        teams: [],
-      }], { session });
-      systemUser = systemUser[0];
-    }
+  //   if (!systemUser) {
+  //     systemUser = await User.create([{
+  //       name: "Kolos AI",
+  //       email: "system@kolos.com",
+  //       clerkId: "system",
+  //       teams: [],
+  //     }], { session });
+  //     systemUser = systemUser[0];
+  //   }
 
-    const systemChat = await Chat.create([{ 
-      name: "Kolos AI", 
-      team: createdTeam[0]._id, 
-      people: [systemUser._id, admin._id], 
-      messages: [] 
-    }], { session });
+  //   const systemChat = await Chat.create([{ 
+  //     name: "Kolos AI", 
+  //     team: createdTeam[0]._id, 
+  //     people: [systemUser._id, admin._id], 
+  //     messages: [] 
+  //   }], { session });
 
-    if (systemChat) {
-      const welcomeMessege = await Messege.create([{ 
-        content: "Thank you for choosing Kolos. We hope you will have a great time working with us!", 
-        sender: systemUser._id, 
-        type: "Default", 
-        chat: systemChat[0]._id
-      }], { session });
+  //   if (systemChat) {
+  //     const welcomeMessege = await Messege.create([{ 
+  //       content: "Thank you for choosing Kolos. We hope you will have a great time working with us!", 
+  //       sender: systemUser._id, 
+  //       type: "Default", 
+  //       chat: systemChat[0]._id
+  //     }], { session });
 
-      systemChat[0].messeges.push(welcomeMessege[0]._id);
-      await systemChat[0].save({ session });
+  //     systemChat[0].messeges.push(welcomeMessege[0]._id);
+  //     await systemChat[0].save({ session });
 
-      createdTeam[0].chats.push(systemChat[0]._id);
+  //     createdTeam[0].chats.push(systemChat[0]._id);
       
-      await createdTeam[0].save({ session });
-    }
+  //     await createdTeam[0].save({ session });
+  //   }
 
-    await session.commitTransaction();
-    session.endSession();
+  //   await session.commitTransaction();
+  //   session.endSession();
 
-    revalidatePath("/dashboard");
+  //   revalidatePath("/dashboard");
 
-    if (type === 'json') {
-      return JSON.stringify(createdTeam[0]);
-    } else {
-      return createdTeam[0];
-    }
+  //   if (type === 'json') {
+  //     return JSON.stringify(createdTeam[0]);
+  //   } else {
+  //     return createdTeam[0];
+  //   }
   } catch (error: any) {
     await session.abortTransaction();
     session.endSession();
