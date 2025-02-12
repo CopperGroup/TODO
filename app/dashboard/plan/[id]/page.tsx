@@ -9,6 +9,7 @@ import { loadStripe } from "@stripe/stripe-js";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check, X, Users, Layout, FileText, HardDrive, Activity, Columns, MessageCircle, Star } from "lucide-react";
 import SubtleBackground from "@/components/backgrounds/SubtleBackground";
+import { useTeamPlan } from "../../team/[id]/TeamPlanProvider";
 
 const plans = {
   basic_plan: {
@@ -53,14 +54,32 @@ const plans = {
   },
 };
 
-export default function BillingPlans({ teamId, currentPlan = "pro_plan" }: { teamId: string; currentPlan?: string }) {
+export default function BillingPlans({ params }: { params: { id: string } }) {
   const { user } = useUser();
   const { toast } = useToast();
-  const [selectedPlan, setSelectedPlan] = useState<string>(currentPlan);
 
+  if(!params.id) {
+    return null
+  }
+  
+  const [selectedPlan, setSelectedPlan] = useState<string>("");
   useEffect(() => {
     loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
   }, []);
+
+  const [currentPlan, setCurrentPlan] = useState<string | null>(null);
+
+  // Fetch team plan when the component mounts
+  useEffect(() => {
+    const fetchPlan = async () => {
+      const plan = await useTeamPlan(params.id);
+      setCurrentPlan(plan);
+      setSelectedPlan(plan || "")
+    };
+
+    fetchPlan();
+  }, [params.id]);
+
 
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
@@ -74,7 +93,7 @@ export default function BillingPlans({ teamId, currentPlan = "pro_plan" }: { tea
 
   const onCheckout = async () => {
     if (!selectedPlan || selectedPlan === currentPlan) return;
-    const transaction = { plan: selectedPlan, teamId, clerkId: user?.id };
+    const transaction = { plan: selectedPlan, teamId: params.id, clerkId: user?.id };
     await checkoutPlan(transaction);
   };
 

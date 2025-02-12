@@ -35,7 +35,6 @@ export default async function RootLayout({
 
   return (
       <section className="flex h-screen overflow-hidden">
-        <TeamPlanProvider>
           <SidebarProvider>
               <AdminSidebar teams={teams} user={user}/>
               <main className="w-full flex-1 overflow-auto custom-scrollbar-blue">
@@ -45,7 +44,6 @@ export default async function RootLayout({
                 <div className="flex-1">{children}</div>
             </main>
           </SidebarProvider>
-        </TeamPlanProvider>
       </section>
   )
 }
