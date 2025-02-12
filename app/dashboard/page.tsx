@@ -107,12 +107,12 @@ export default async function TeamsPage() {
                         <p className="text-sm font-semibold">Active Boards</p>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {team.boards.slice(0, team.boards.length > 3 ? 2 : 3).map((board) => (
+                        {team.boards?.slice(0, team.boards.length > 3 ? 2 : 3).map((board) => (
                           <Badge key={board._id} variant="outline">
                             {board.name}
                           </Badge>
                         ))}
-                        {team.boards.length > 3 && (
+                        {team.boards?.length > 3 && (
                           <Badge variant="outline">{`+ ${team.boards.length - 2} more`}</Badge>
                         )}
                       </div>
