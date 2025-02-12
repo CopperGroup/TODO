@@ -31,7 +31,7 @@ export async function createTeam({ name, usersEmails, adminClerkId, plan, themeC
   try {
     await connectToDB();
 
-    const existingUsers = await User.find({ email: { $in: usersEmails } }).session(session);
+    const existingUsers: any[] = [];
 
     if (!adminClerkId) {
       throw new Error(`Error creating team, no admin clerk id`);
