@@ -26,7 +26,6 @@ export async function POST(request: Request) {
 
     const transaction = {
       stripeId: id,
-      amount: amount_total ? amount_total / 100 : 0,
       plan: metadata?.plan || "",
       teamId: metadata?.teamId || '',
       buyerId: metadata?.buyerId || "",

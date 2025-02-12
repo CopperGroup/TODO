@@ -13,6 +13,7 @@ import { changeBoardColumnsOrder } from "@/lib/actions/board.actions";
 import Team from "@/lib/models/team.model";
 import { Button } from "../ui/button";
 import Link from "next/link";
+import plans from "@/constants/plans";
 
 function debounce(func: Function, wait: number) {
   let timeout: NodeJS.Timeout
@@ -232,14 +233,14 @@ const Board = ({ stringifiedBoard }: { stringifiedBoard: string }) => {
           }
           <div className="pr-10">
             <div className="w-full flex justify-end">
-              {board.team.plan === "basic_plan" ? (
+              {plans[board.team.plan].features.custom_columns ? (
+                <AddColumn boardId={board._id} setState={setColumns as unknown as React.Dispatch<SetStateAction<ColumnType[]>>}/> 
+              ): (
                 <div className="w-full">
                   <Button className="w-full p-0 hover:bg-transparent" variant='ghost'>
                     <Link href={`/dashboard/team/${board.team._id}/plans`} className="w-full h-full flex items-center justify-center text-center text-neutral-400">Add Column <span className="coppergroup-gradient-text font-bold ml-2"> Pro</span></Link>
                   </Button>
                 </div>
-              ): (
-                <AddColumn boardId={board._id} setState={setColumns as unknown as React.Dispatch<SetStateAction<ColumnType[]>>}/> 
               )
               }
                 {/* TODO: fix state */}

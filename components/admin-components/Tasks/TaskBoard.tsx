@@ -97,7 +97,7 @@ const TaskBoard: React.FC<TaskBoardProps> = ({ stringifiedTeamTasks, currentUser
                             <h3 className="font-medium text-gray-900 truncate">{task.description}</h3>
                           </div>
                           <Select defaultValue={task.column?._id as string} onValueChange={(value) => handleColumnChange(task._id, value)}>
-                            <SelectTrigger className="h-7 w-[120px] text-xs bg-zinc-800 border-zinc-700 focus:ring-blue-500" style={{ color: task.column.textColor || "#f4f4f5" }}>
+                            <SelectTrigger className="h-7 w-[120px] text-xs bg-gray-50 border-zinc-200 focus:ring-blue-500">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent className="bg-neutral-800 border-zinc-700 focus:ring-blue-500">

@@ -4,6 +4,7 @@ import { ObjectId } from "mongoose";
 import Team from "../models/team.model";
 import User, { UserType } from "../models/user.model";
 import { TeamPopulatedChatsType } from "../types";
+import plans from "@/constants/plans";
 
 export async function fetchTeamChats({ teamId, clerkId }: { teamId: string, clerkId?: string}): Promise<TeamPopulatedChatsType>;
 export async function fetchTeamChats({ teamId, clerkId }: { teamId: string, clerkId?: string}, type: 'json'): Promise<string>;
@@ -41,10 +42,13 @@ export async function fetchTeamChats({ teamId, clerkId }: { teamId: string, cler
 
     const userRole = team.members.find((member: { user: ObjectId, role: 'Admin' | 'Member'}) => member.user.toString() === user._id.toString()).role
 
+    if(!plans[team.plan as 'basic_plan' || 'pro_plan'].features.chats) {
+      team.chats = team.chats.filter((chat: { people: UserType[] }) => chat.people.map(user => user.email).includes("system@kolos.com"))
+    }
+
     if(userRole !== "Admin") {
       team.chats = team.chats.filter((chat: { people: UserType[] }) => !chat.people.map(user => user.email).includes("system@kolos.com"))
     }
-
 
     if(type === 'json'){
       return JSON.stringify(team)

@@ -42,14 +42,12 @@ export async function checkoutPlan(transaction: { plan: string, teamId: string, 
     redirect(session.url!)
 }
 
-export async function createTransaction(transaction: { stripeId: string, amount: number, plan: string, teamId: string, buyerId: string, createdAt: Date }) {
+export async function createTransaction(transaction: { stripeId: string, plan: string, teamId: string, buyerId: string, createdAt: Date }) {
   try {
     connectToDB();
 
-    console.log(transaction)
     const payingForTeamId = transaction.teamId
 
-    console.log(transaction.plan)
     const team = await Team.findByIdAndUpdate(
         payingForTeamId,
         {
@@ -58,7 +56,6 @@ export async function createTransaction(transaction: { stripeId: string, amount:
         { new: true }
     )
 
-    console.log(team)
     const newTransaction = await Transaction.create(transaction)
 
     const payingUserId = transaction.buyerId;

@@ -119,7 +119,7 @@ export default function CommentField({ onCommentAdd }: CommentFieldProps) {
     content: "",
     editorProps: {
       attributes: {
-        class: "prose prose-invert min-h-[100px] w-full text-gray-100 focus:outline-none",
+        class: "prose prose-invert min-h-[100px] max-w-[700px] w-full text-gray-100 focus:outline-none max-[1150px]:max-w-[650px] max-[1100px]:max-w-[600px] max-[1040px]:max-w-[580px]",
       },
     },
   })

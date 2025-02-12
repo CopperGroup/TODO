@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import Board, { BoardType } from "../models/board.model";
 import Column from "../models/column.model";
 import Team from "../models/team.model";
@@ -151,6 +152,7 @@ export async function createBoard({ teamId, boardName }: { teamId: string, board
         await team.save()
     }
     
+    revalidatePath(`/dashboard/team/${teamId}`)
     if(type === 'json'){
       return JSON.stringify(board)
     } else {

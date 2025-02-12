@@ -35,9 +35,10 @@ import { useUser } from "@clerk/nextjs"
 import { usePathname, useRouter } from "next/navigation"
 import { getTextColorBasedOnBackground } from "@/lib/utils"
 import { UserType } from "@/lib/models/user.model"
+import plans from "@/constants/plans"
 
 
-export function AdminSidebar({ user, teams }: { user: UserType, teams: { teamId: string, name: string, teamColor: string, boards: { boardId: string; name: string }[], members: { user: string, role: "Admin" | "Member" }[], userUnreadMesseges: number, plan: string }[]}) {
+export function AdminSidebar({ user, teams }: { user: UserType, teams: { teamId: string, name: string, teamColor: string, boards: { boardId: string; name: string }[], members: { user: string, role: "Admin" | "Member" }[], userUnreadMesseges: number, plan: 'basic_plan' | 'pro_plan' }[]}) {
   const router = useRouter();
   const pathname = usePathname();
   const parts = pathname.split('/'); 
@@ -153,21 +154,23 @@ export function AdminSidebar({ user, teams }: { user: UserType, teams: { teamId:
                             </Link>
                           </DropdownMenuItem>
                         ))}
-                        <DropdownMenuItem asChild>
-                          {selectedTeam?.plan === "basic_plan" ? (
-                              <Link href={`/dashboard/team/${selectedTeam?.teamId}/plans`} className="flex items-center gap-2 text-blue-600/40 cursor-pointer hover:text-blue-500 focus:text-blue-500">
-                                <PlusCircle className="h-4 w-4" />
-                                Create New Board <span className="coppergroup-gradient-text font-bold">Pro</span>
-                              </Link>
-                            ): (
-                              <Link href={`/dashboard/team/${selectedTeam?.teamId}/board/new`} className="flex items-center gap-2 text-blue-600 cursor-pointer">
-                                <PlusCircle className="h-4 w-4" />
-                                Create New Board 
-                              </Link>
-                            )
+                        {((selectedTeam?.boards.length || 1)) < plans['pro_plan'].features.boards && (
+                          <DropdownMenuItem asChild>
+                            {(selectedTeam ? selectedTeam.boards.length : 1) + 1 < (plans[selectedTeam ? selectedTeam.plan : 'basic_plan'].features.boards) ? (
+                                <Link href={`/dashboard/team/${selectedTeam?.teamId}/board/new`} className="flex items-center gap-2 text-blue-600 cursor-pointer">
+                                  <PlusCircle className="h-4 w-4" />
+                                  Create New Board 
+                                </Link>
+                              ): (
+                                <Link href={`/dashboard/team/${selectedTeam?.teamId}/plans`} className="flex items-center gap-2 text-blue-600/40 cursor-pointer hover:text-blue-500 focus:text-blue-500">
+                                  <PlusCircle className="h-4 w-4" />
+                                  Create New Board <span className="coppergroup-gradient-text font-bold">Pro</span>
+                                </Link>
+                              )
 
-                          }
-                        </DropdownMenuItem>
+                            }
+                          </DropdownMenuItem>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   ) : (

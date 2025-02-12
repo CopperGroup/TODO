@@ -48,7 +48,7 @@ export type PopulatedTeamType = {
     }[];
     invitedMembers: string[]; // List of emails for invited members
     themeColor: string;
-    plan: string
+    plan: 'basic_plan' | 'pro_plan'
   };
 
 

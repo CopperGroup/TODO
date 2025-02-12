@@ -23,9 +23,9 @@ import {
   SendMessegeButton,
 } from "@/components/ui/chat"
 import type { TeamPopulatedChatsType } from "@/lib/types"
-import { Send } from "lucide-react"
+import { LockOpen, Send } from "lucide-react"
 import moment from "moment"
-import { handleMessegesRead } from "@/lib/actions/messeges.actions"
+import { createMessege, handleMessegesRead } from "@/lib/actions/messeges.actions"
 import MessegeItem from "./Messege"
 import Link from "next/link"
 
@@ -78,6 +78,35 @@ export default function Chats({ stringifiedTeamData, clerkId }: { stringifiedTea
   const handleChatSelect = (chat: TeamPopulatedChatsType["chats"][number]) => {
     setSelectedChat(chat)
   }
+
+  const [messageContent, setMessageContent] = useState<string>("");
+
+  const handleSendMessage = async () => {
+    if (!messageContent.trim() || !selectedChat) return;
+
+    try {
+      const result = await createMessege({
+        sender: selectedChat.people[1]._id,
+        content: messageContent,
+        messegeType: "text",
+        chat: selectedChat._id,
+      }, 'json');
+
+      const newMessege = JSON.parse(result)
+
+      const updatedMesseges = [...selectedChat.messeges, newMessege];
+      setSelectedChat({ ...selectedChat, messeges: updatedMesseges });
+      
+      setMessageContent("");
+
+      containerRef.current?.scrollTo({
+        top: containerRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    } catch (error) {
+      console.error("Failed to send message:", error);
+    }
+  };
 
   return (
     <Chat className="h-screen w-full flex bg-gray-100" ref={containerRef}>
@@ -160,10 +189,12 @@ export default function Chats({ stringifiedTeamData, clerkId }: { stringifiedTea
               placeholder="Type a messege..."
               className="flex-1 bg-gray-100 border-none rounded-md px-6 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={selectedChat.people[0].email === "system@kolos.com"}
+              onChange={(e) => setMessageContent(e.target.value)}
             />
             <SendMessegeButton
+              onClick={handleSendMessage}
               className="ml-4 bg-zinc-800 text-white p-3 rounded-md transition-colors duration-200"
-              disabled={selectedChat.people[0].email === "system@kolos.com"}
+              disabled={!messageContent.trim() || selectedChat.people[0].email === "system@kolos.com"}
             >
               <Send size={20} />
             </SendMessegeButton>
@@ -172,7 +203,7 @@ export default function Chats({ stringifiedTeamData, clerkId }: { stringifiedTea
       ) : (
         <div className="w-3/4 flex items-center justify-center text-gray-500 bg-white">
           {teamData.plan === 'basic_plan' ? (
-            <Link href={`/dashboard/team/${teamData._id}/plans`} className="text-xl font-semibold">Upgrade to<span className="coppergroup-gradient-text font-bold ml-2">Pro</span></Link>
+            <Link href={`/dashboard/team/${teamData._id}/plans`} className="text-xl text-center font-semibold">Upgrade to<span className="coppergroup-gradient-text font-bold ml-2">Pro</span><br/>to <span className="coppergroup-gradient-text font-bold ml-2">Unlock</span> team messeges</Link>
             ): (
               <p className="text-xl font-semibold">Select a chat to start messaging</p>
             )
