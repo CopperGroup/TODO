@@ -5,7 +5,7 @@ import type { TeamPopulatedChatsType } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { format } from "date-fns"
-import { performRquestAction } from "@/lib/actions/team.actions"
+import { performRequestAction } from "@/lib/actions/team.actions"
 import { lowercaseFirstLetter } from "@/lib/utils"
 import { useState } from "react"
 
@@ -24,7 +24,7 @@ export default function MessegeItem({
   const handleRequestAction = async (action: "Accept" | "Refuse") => {
     setMessegeType(`Request-${lowercaseFirstLetter(action)}`)
 
-    await performRquestAction({ teamId, messegeContent: messege.content, messegeId: messege._id, action})
+    await performRequestAction({ teamId, messegeContent: messege.content, messegeId: messege._id, action})
   }
 
   return (

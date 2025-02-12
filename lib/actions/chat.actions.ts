@@ -50,6 +50,8 @@ export async function fetchTeamChats({ teamId, clerkId }: { teamId: string, cler
       team.chats = team.chats.filter((chat: { people: UserType[] }) => !chat.people.map(user => user.email).includes("system@kolos.com"))
     }
 
+    team.chats = team.chats.filter((chat: { people: UserType[] }) => chat.people.map(user => user.clerkId).includes(clerkId || ""))
+
     if(type === 'json'){
       return JSON.stringify(team)
     } else {

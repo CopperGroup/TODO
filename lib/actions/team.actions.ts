@@ -324,21 +324,41 @@ export async function joinTeam({ clerkId, teamId }: { clerkId?: string, teamId: 
     await connectToDB();
 
     const user = await User.findOne({ clerkId }).session(session);
-
     if (!user) {
       throw new Error("User not found");
     }
 
     const team = await Team.findById(teamId).session(session);
-
     if (!team) {
       throw new Error("Team not found");
     }
 
     if (team.invitedMembers.includes(user.email)) {
       team.invitedMembers = team.invitedMembers.filter((email: string) => email !== user.email);
-      team.members.push({ user: user._id, role: "Member" });
-      user.teams.push(team._id);
+      team.members = Array.from(new Set([...team.members, { user: user._id, role: "Member" }]));
+      user.teams = Array.from(new Set([...user.teams, team._id]));
+
+      // Create a chat with every team member if it doesn't already exist
+      const teamMembers = team.members.map((member: any) => member.user);
+      for (const memberId of teamMembers) {
+        if (memberId.toString() !== user._id.toString()) {
+          const existingChat = await Chat.findOne({
+            people: { $all: [user._id, memberId] },
+          }).session(session);
+
+          if (!existingChat) {
+            // Create a new chat between the user and the team member
+            const chat = new Chat({
+              name: `Chat between ${user.name} and ${memberId}`, // You can customize the chat name
+              team: team._id,
+              people: [user._id, memberId],
+            });
+
+            team.chats.push(chat._id)
+            await chat.save({ session });
+          }
+        }
+      }
 
       await team.save({ session });
       await user.save({ session });
@@ -372,13 +392,12 @@ export async function joinTeam({ clerkId, teamId }: { clerkId?: string, teamId: 
           </div>
         `;
         
-        
         const adminId = team.members.find((member: TeamType["members"][number]) => member.role === 'Admin').user;
         
         const chat = await Chat.findOne({ team: team._id, people: [systemUser._id, adminId] }).session(session);
 
-        if(!chat) {
-          throw new Error('Systme-Admin chat not found')
+        if (!chat) {
+          throw new Error('System-Admin chat not found');
         }
 
         const requestMessege = new Messege({
@@ -417,7 +436,7 @@ export async function joinTeam({ clerkId, teamId }: { clerkId?: string, teamId: 
   }
 }
 
-export async function performRquestAction({
+export async function performRequestAction({
   teamId,
   messegeContent,
   messegeId,
@@ -432,33 +451,54 @@ export async function performRquestAction({
   session.startTransaction();
 
   try {
-    const team = await Team.findById(teamId).session(session);
-    if (!team) {
-      throw new Error("Team not found");
-    }
+    const team = await Team.findById(teamId).populate("members.user").session(session);
+    if (!team) throw new Error("Team not found");
 
     const userEmail = messegeContent.match(/<strong>Email:<\/strong>\s*(.*?)<\/p>/)?.[1];
-    if (!userEmail) {
-      throw new Error("User email not found in message content");
-    }
+    if (!userEmail) throw new Error("User email not found in message content");
 
     const user = await User.findOne({ email: userEmail }).session(session);
-    if (!user) {
-      throw new Error("User not found");
-    }
+    if (!user) throw new Error("User not found");
 
     if (!team.requests.includes(user._id) || !user.requests.includes(team._id)) {
       throw new Error("Request not found in the user's or team's request list");
     }
 
     if (action === "Accept") {
-      // Move teamId into user's teams and add user as 'Member' in the team
-      team.members.push({ user: user._id, role: "Member" });
-      user.teams.push(team._id);
-
-      // Remove user from team's requests and team from user's requests
+      // Convert teams and members to Sets to avoid duplicates
+      user.teams = Array.from(new Set([...user.teams, team._id]));
+      team.members = Array.from(new Set([...team.members, { user: user._id, role: "Member" }]));
       team.requests = team.requests.filter((request: Types.ObjectId) => !request.equals(user._id));
       user.requests = user.requests.filter((request: Types.ObjectId) => !request.equals(team._id));
+
+      // Create a private chat between the new user and each existing team member
+      for (const member of team.members) {
+        const memberId = member.user._id.toString();
+        const userId = user._id.toString();
+
+        if (memberId !== userId) {
+          const existingChat = await Chat.findOne({
+            team: team._id,
+            people: { $all: [userId, memberId] },
+          }).session(session);
+
+          if (!existingChat) {
+            const newChat = await Chat.create(
+              [
+                {
+                  name: "Private Chat",
+                  team: team._id,
+                  people: [userId, memberId],
+                  messages: [],
+                },
+              ],
+              { session }
+            );
+
+            team.chats.push(newChat[0]._id);
+          }
+        }
+      }
 
       // Update message type to "Request-accepted"
       const message = await Messege.findById(messegeId).session(session);
@@ -467,15 +507,12 @@ export async function performRquestAction({
         await message.save({ session });
       }
 
-      // Save changes to user and team
       await team.save({ session });
       await user.save({ session });
 
-      // Commit transaction
       await session.commitTransaction();
       session.endSession();
-    } 
-    else if (action === "Refuse") {
+    } else if (action === "Refuse") {
       // Remove user from team's requests and team from user's requests
       team.requests = team.requests.filter((request: Types.ObjectId) => !request.equals(user._id));
       user.requests = user.requests.filter((request: Types.ObjectId) => !request.equals(team._id));
@@ -487,7 +524,6 @@ export async function performRquestAction({
         await message.save({ session });
       }
 
-      // Save changes to user and team
       await team.save({ session });
       await user.save({ session });
 
@@ -502,6 +538,7 @@ export async function performRquestAction({
     throw new Error(`Error processing request action: ${error.message}`);
   }
 }
+
 
 export async function fetchTeamMembers({ teamId }: { teamId: string }): Promise<TeamType & { members: { user: UserType, role: 'Admin' | 'Member' }[] }>;
 export async function fetchTeamMembers({ teamId }: { teamId: string }, type: 'json'): Promise<string>;

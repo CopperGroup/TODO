@@ -85,20 +85,24 @@ export default function Chats({ stringifiedTeamData, clerkId }: { stringifiedTea
     if (!messageContent.trim() || !selectedChat) return;
 
     try {
+      const content = messageContent;
+
+      setMessageContent("");
+
       const result = await createMessege({
         sender: selectedChat.people[1]._id,
-        content: messageContent,
+        content: content,
         messegeType: "text",
         chat: selectedChat._id,
       }, 'json');
+
 
       const newMessege = JSON.parse(result)
 
       const updatedMesseges = [...selectedChat.messeges, newMessege];
       setSelectedChat({ ...selectedChat, messeges: updatedMesseges });
 
-      setMessageContent("");
-
+      
       containerRef.current?.scrollTo({
         top: containerRef.current.scrollHeight,
         behavior: "smooth",
@@ -162,7 +166,7 @@ export default function Chats({ stringifiedTeamData, clerkId }: { stringifiedTea
               alt={selectedChat.name}
               className="w-10 h-10 rounded-full"
             />
-            <ChatHeaderName className="ml-4 font-semibold text-gray-900">{selectedChat.name}</ChatHeaderName>
+            <ChatHeaderName className="ml-4 font-semibold text-gray-900">{selectedChat.people.filter((p) => p.clerkId != clerkId)[0].name}</ChatHeaderName>
           </ChatHeader>
           <ChatContent className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
             {selectedChat.messeges.reduce((acc: JSX.Element[], messege, index, array) => {
@@ -190,6 +194,7 @@ export default function Chats({ stringifiedTeamData, clerkId }: { stringifiedTea
               placeholder="Type a messege..."
               className="flex-1 bg-gray-100 border-none rounded-md px-6 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={selectedChat.people.filter(p => p.clerkId !== clerkId)[0].email === "system@kolos.com"}
+              value={messageContent}
               onChange={(e) => setMessageContent(e.target.value)}
             />
             <SendMessegeButton
