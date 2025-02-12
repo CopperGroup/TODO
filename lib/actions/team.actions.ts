@@ -788,3 +788,19 @@ export async function updateTeamPlan({ teamId, planName }: { teamId: string, pla
     throw new Error(`${error.message}`)
   }
 }
+
+export async function fetchTeamPlan({ teamId }: { teamId: string}): Promise<string> {
+  try {
+    connectToDB();
+
+    const team = await Team.findById(teamId);
+
+    if(!team) {
+      throw new Error("Team not found ")
+    }
+
+    return team.plan
+  } catch (error: any) {
+    throw new Error(`Error fetching team plan ${error.message}`)
+  }
+}

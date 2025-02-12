@@ -9,7 +9,7 @@ import { loadStripe } from "@stripe/stripe-js";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check, X, Users, Layout, FileText, HardDrive, Activity, Columns, MessageCircle, Star } from "lucide-react";
 import SubtleBackground from "@/components/backgrounds/SubtleBackground";
-import { useTeamPlan } from "../../team/[id]/TeamPlanProvider";
+import { fetchTeamPlan } from "@/lib/actions/team.actions";
 
 const plans = {
   basic_plan: {
@@ -68,7 +68,7 @@ export default function BillingPlans({ params }: { params: { id: string } }) {
     // Fetch team plan when the component mounts
     useEffect(() => {
         const fetchPlan = async () => {
-            const plan = await useTeamPlan(params.id);
+            const plan = await fetchTeamPlan({ teamId: params.id});
             setCurrentPlan(plan);
             setSelectedPlan(plan || "")
         };
