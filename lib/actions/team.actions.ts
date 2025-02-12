@@ -154,10 +154,11 @@ export async function createTeam({ name, usersEmails, adminClerkId, plan }: crea
     revalidatePath("/dashboard");
 
     if (type === 'json') {
-      return JSON.stringify(createdTeam[0]);
+      return createdTeam[0]._id.toString();
     } else {
       return createdTeam[0];
     }
+
   } catch (error: any) {
     await session.abortTransaction();
     session.endSession();
