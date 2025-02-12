@@ -138,7 +138,7 @@ export async function fetchUsersTeams({ clerkId }: { clerkId: string | undefined
     // Step 3: Find teams that the user is part of (using user._id)
     const teams = await Team.find({ "members.user": user._id })
       .populate("members.user", "_id name email profilePicture role online") // Populate user details in the teams
-      .populate({ path: "boards", model: Board, select: "_id name"})
+      .populate({ path: "boards", model: 'Board', select: "_id name"})
       .populate({path: "tasks", model: 'Task'})
       .exec();
 
@@ -663,11 +663,12 @@ export async function calculateSummary({ teamId }: { teamId: string }) {
             path: "tasks", 
             populate: {
               path: "column",  // Populate column in task (to get column names like 'Done', 'TODO', etc.)
-              model: 'Column'
+              model: Column
             },
           },
           {
-            path: 'columns'
+            path: 'columns',
+            model: Column
           }
         ]
       })
