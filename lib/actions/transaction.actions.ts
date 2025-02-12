@@ -35,7 +35,7 @@ export async function checkoutPlan(transaction: { plan: string, teamId: string, 
             buyerId: user._id.toString
         },
         mode: 'subscription',
-        success_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/dashboardteam/${transaction.teamId}`,
+        success_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/dashboard/team/${transaction.teamId}`,
         cancel_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/dashboard/team/${transaction.teamId}`
     })
 

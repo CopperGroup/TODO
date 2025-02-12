@@ -58,46 +58,46 @@ export default function BillingPlans({ params }: { params: { id: string } }) {
   const { user } = useUser();
   const { toast } = useToast();
 
-  if(!params.id) {
-    return null
-  }
-  
   const [selectedPlan, setSelectedPlan] = useState<string>("");
   useEffect(() => {
-    loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
-  }, []);
-
-  const [currentPlan, setCurrentPlan] = useState<string | null>(null);
-
-  // Fetch team plan when the component mounts
-  useEffect(() => {
-    const fetchPlan = async () => {
-      const plan = await useTeamPlan(params.id);
-      setCurrentPlan(plan);
-      setSelectedPlan(plan || "")
+      loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+    }, []);
+    
+    const [currentPlan, setCurrentPlan] = useState<string | null>(null);
+    
+    // Fetch team plan when the component mounts
+    useEffect(() => {
+        const fetchPlan = async () => {
+            const plan = await useTeamPlan(params.id);
+            setCurrentPlan(plan);
+            setSelectedPlan(plan || "")
+        };
+        
+        fetchPlan();
+    }, [params.id]);
+    
+    
+    useEffect(() => {
+        const query = new URLSearchParams(window.location.search);
+        if (query.get("success")) {
+            toast({ title: "Order placed!", description: "You will receive an email confirmation", duration: 5000 });
+        }
+        if (query.get("canceled")) {
+            toast({ title: "Order canceled!", description: "Continue to shop around and checkout when you're ready", duration: 5000 });
+        }
+    }, [toast]);
+    
+    if(!params.id) {
+      return null
+    }
+    
+    const onCheckout = async () => {
+        if (!selectedPlan || selectedPlan === currentPlan) return;
+        const transaction = { plan: selectedPlan, teamId: params.id, clerkId: user?.id };
+        await checkoutPlan(transaction);
     };
-
-    fetchPlan();
-  }, [params.id]);
-
-
-  useEffect(() => {
-    const query = new URLSearchParams(window.location.search);
-    if (query.get("success")) {
-      toast({ title: "Order placed!", description: "You will receive an email confirmation", duration: 5000 });
-    }
-    if (query.get("canceled")) {
-      toast({ title: "Order canceled!", description: "Continue to shop around and checkout when you're ready", duration: 5000 });
-    }
-  }, [toast]);
-
-  const onCheckout = async () => {
-    if (!selectedPlan || selectedPlan === currentPlan) return;
-    const transaction = { plan: selectedPlan, teamId: params.id, clerkId: user?.id };
-    await checkoutPlan(transaction);
-  };
-
-  const renderFeatures = (planId: string, features: Record<string, any>) => {
+    
+    const renderFeatures = (planId: string, features: Record<string, any>) => {
     if (planId === "tester_plan") return null;
 
     const featureIcons = {
