@@ -55,7 +55,7 @@ export async function createTeamPlan(transaction: { plan: string, teamName: stri
 
     const basicPriceId = process.env.BASIC_PLAN!
     const proPriceId = process.env.PRO_PLAN!
-
+    
     const session = await stripe.checkout.sessions.create({
         line_items:[
             {

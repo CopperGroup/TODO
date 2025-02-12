@@ -107,7 +107,7 @@ export default function CreateTeamPage() {
         teamName: data.teamName, 
         clerkId: user?.id, 
         teamThemeColor: data.themeColor, 
-        invitedMembers: data.members.join(", ") 
+        invitedMembers: data.members.map(m => m.value).join(", ") 
       })
       // await createTeam(
       //   {

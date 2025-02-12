@@ -28,13 +28,15 @@ export async function POST(request: Request) {
     let teamId = metadata?.teamId || '';
 
     if(metadata?.type === "create") {
-        const createdTeam = await createTeam({
+        const result = await createTeam({
             name: metadata.teamName,
             usersEmails: metadata.invitedMembers.split(", "),
+            themeColor: metadata.teamThemeColor,
             adminId: metadata.buyerId,
             plan: metadata.plan as 'basic_plan' | 'pro_plan'
-        })
+        }, 'json')
 
+        const createdTeam = JSON.parse(result)
         teamId = createdTeam._id
     } 
 
