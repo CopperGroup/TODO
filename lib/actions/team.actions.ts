@@ -34,12 +34,12 @@ export async function createTeam({ name, usersEmails, themeColor, adminId, plan 
     const existingUsers = await User.find({ email: { $in: usersEmails } }).session(session);
 
     if (!adminId) {
-      console.error(`Error creating team, no admin clerk id`);
+      throw new Error(`Error creating team, no admin clerk id`);
     }
 
     const admin = await User.findById(adminId).session(session);
     if (!admin) {
-      console.error(`Error creating team, no admin user found`);
+      throw new Error(`Error creating team, no admin user found`);
     }
 
     const teamMembers = [
@@ -193,7 +193,7 @@ export async function createTeam({ name, usersEmails, themeColor, adminId, plan 
   } catch (error: any) {
     await session.abortTransaction();
     session.endSession();
-    console.error(`Error creating team: ${error.message}`);
+    throw new Error(`Error creating team: ${error.message}`);
   }
 }
 
