@@ -27,6 +27,8 @@ export async function POST(request: Request) {
 
     let teamId = metadata?.teamId || '';
 
+    console.log(metadata);
+    
     if(metadata?.type === "create") {
         const result = await createTeam({
             name: metadata.teamName,
