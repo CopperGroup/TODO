@@ -246,7 +246,7 @@ function NameAndTheme({ form }: { form: any }) {
               </div>
             </FormControl>
             <FormDescription className="text-xs mt-1">
-              Choose a color that represents your team's identity.
+              Choose a color that represents your team&apos;s identity.
             </FormDescription>
             <FormMessage />
           </FormItem>

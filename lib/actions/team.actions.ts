@@ -19,11 +19,12 @@ type createTeamParams = {
    name: string
    usersEmails: string[],
    adminId: string,
+   themeColor: string,
    plan: 'basic_plan' | 'pro_plan'
 }
 
 
-export async function createTeam({ name, usersEmails, adminId, plan }: createTeamParams, type?: 'json') {
+export async function createTeam({ name, usersEmails, themeColor, adminId, plan }: createTeamParams, type?: 'json') {
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -49,6 +50,7 @@ export async function createTeam({ name, usersEmails, adminId, plan }: createTea
     const createdTeam = await Team.create([{ 
       name, 
       members: teamMembers, 
+      themeColor,
       invitedMembers: usersEmails,
       plan: plan
     }], { session });
