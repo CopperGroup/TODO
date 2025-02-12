@@ -670,8 +670,10 @@ export async function calculateSummary({ teamId }: { teamId: string }) {
             path: 'columns',
             model: Column
           }
-        ]
-      });
+        ],
+        model: Board
+      })
+      .exec();
 
     if (!team) {
       throw new Error("Team not found");
