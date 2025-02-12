@@ -29,6 +29,9 @@ export default async function RootLayout({
     redirect('/dashboard')
   }
   
+  if(!['basic_plan', 'pro_plan'].includes(currentTeam.plan)) {
+    redirect(`/dashboard/plan/${teamId}`)
+  }
 
   return (
       <section className="flex h-screen overflow-hidden">

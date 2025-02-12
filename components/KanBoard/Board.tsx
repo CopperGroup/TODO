@@ -251,7 +251,7 @@ const Board = ({ stringifiedBoard }: { stringifiedBoard: string }) => {
               ): (
                 <div className="w-full">
                   <Button className="w-full p-0 hover:bg-transparent" variant='ghost'>
-                    <Link href={`/dashboard/team/${board.team._id}/plans`} className="w-full h-full flex items-center justify-center text-center text-neutral-400">Add Column <span className="coppergroup-gradient-text font-bold ml-2"> Pro</span></Link>
+                    <Link href={`/dashboard/plan/${board.team._id}`} className="w-full h-full flex items-center justify-center text-center text-neutral-400">Add Column <span className="coppergroup-gradient-text font-bold ml-2"> Pro</span></Link>
                   </Button>
                 </div>
               )

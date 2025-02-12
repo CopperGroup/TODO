@@ -162,7 +162,7 @@ export function AdminSidebar({ user, teams }: { user: UserType, teams: { teamId:
                                   Create New Board 
                                 </Link>
                               ): (
-                                <Link href={`/dashboard/team/${selectedTeam?.teamId}/plans`} className="flex items-center gap-2 text-blue-600/40 cursor-pointer hover:text-blue-500 focus:text-blue-500">
+                                <Link href={`/dashboard/plan/${selectedTeam?.teamId}`} className="flex items-center gap-2 text-blue-600/40 cursor-pointer hover:text-blue-500 focus:text-blue-500">
                                   <PlusCircle className="h-4 w-4" />
                                   Create New Board <span className="coppergroup-gradient-text font-bold">Pro</span>
                                 </Link>

@@ -204,7 +204,7 @@ export default function Chats({ stringifiedTeamData, clerkId }: { stringifiedTea
       ) : (
         <div className="w-3/4 flex items-center justify-center text-gray-500 bg-white">
           {teamData.plan === 'basic_plan' ? (
-            <Link href={`/dashboard/team/${teamData._id}/plans`} className="text-xl text-center font-semibold">Upgrade to<span className="coppergroup-gradient-text font-bold ml-2">Pro</span><br/>to <span className="coppergroup-gradient-text font-bold ml-2">Unlock</span> team messeges</Link>
+            <Link href={`/dashboard/plan/${teamData._id}`} className="text-xl text-center font-semibold">Upgrade to<span className="coppergroup-gradient-text font-bold ml-2">Pro</span><br/>to <span className="coppergroup-gradient-text font-bold ml-2">Unlock</span> team messeges</Link>
             ): (
               <p className="text-xl font-semibold">Select a chat to start messaging</p>
             )

@@ -25,7 +25,7 @@ import {
   ComboboxEmpty,
 } from "@/components/ui/combobox"
 import { Badge } from "@/components/ui/badge"
-import { createTeamPlan } from "@/lib/actions/transaction.actions"
+import { checkoutPlan, createTeamPlan } from "@/lib/actions/transaction.actions"
 
 const formSchema = z.object({
   teamName: z.string().min(2, {
@@ -102,13 +102,16 @@ export default function CreateTeamPage() {
   const onSubmit = async (data: FormData) => {
     setIsCreating(true)
     try {
-      await createTeamPlan({ 
-        plan: data.billingPlan, 
-        teamName: data.teamName, 
-        clerkId: user?.id, 
-        teamThemeColor: data.themeColor, 
-        invitedMembers: data.members.map(m => m.value).join(", ") 
-      })
+      const result = await createTeam({ 
+        name: data.teamName,
+        usersEmails: data.members.map(m => m.value),
+        themeColor: data.themeColor,
+        plan: 'free_plan',
+        adminClerkId: user?.id
+      }, 'json')
+
+      const transaction = { plan: data.billingPlan, teamId: JSON.parse(result), clerkId: user?.id };
+      await checkoutPlan(transaction);
       // await createTeam(
       //   {
       //     name: data.teamName,

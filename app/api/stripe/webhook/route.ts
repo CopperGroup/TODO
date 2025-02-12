@@ -29,21 +29,6 @@ export async function POST(request: Request) {
 
     console.log(metadata);
 
-    if(metadata?.type === "create") {
-        console.log( metadata.invitedMembers.split(", "))
-        const result = await createTeam({
-            name: metadata.teamName,
-            usersEmails: metadata.invitedMembers.split(", "),
-            themeColor: metadata.teamThemeColor,
-            adminId: metadata.buyerId,
-            plan: metadata.plan as 'basic_plan' | 'pro_plan'
-        }, 'json')
-
-        console.log(result)
-        const createdTeam = JSON.parse(result)
-        teamId = createdTeam._id
-    } 
-
     const transaction = {
       stripeId: id,
       plan: metadata?.plan || "",
