@@ -19,13 +19,13 @@ export async function checkoutPlan(transaction: { plan: string, teamId: string, 
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
-    const basicPriceId = "price_1QrOVxGLst1zxpx0SyvIv0iL"
-    const proPriceId = "price_1QrRtgGLst1zxpx0jR1atoSO"
+    const basicPriceId = process.env.BASIC_PLAN!
+    const proPriceId = process.env.PRO_PLAN!
 
     const session = await stripe.checkout.sessions.create({
         line_items:[
             {
-                price: proPriceId,
+                price: transaction.plan === 'basic_plan' ? basicPriceId : proPriceId,
                 quantity: 1
             }
         ],
@@ -35,8 +35,46 @@ export async function checkoutPlan(transaction: { plan: string, teamId: string, 
             buyerId: user._id.toString
         },
         mode: 'subscription',
-        success_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/dashboard`,
+        success_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/dashboardteam/${transaction.teamId}`,
         cancel_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/dashboard/team/${transaction.teamId}`
+    })
+
+    redirect(session.url!)
+}
+
+export async function createTeamPlan(transaction: { plan: string, teamName: string, clerkId?: string, teamThemeColor: string, invitedMembers: string }) {
+    await connectToDB();
+
+    const user = await User.findOne({ clerkId: transaction.clerkId });
+
+    if(!user) {
+        throw new Error('No user found')
+    }
+
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+
+    const basicPriceId = process.env.BASIC_PLAN!
+    const proPriceId = process.env.PRO_PLAN!
+
+    const session = await stripe.checkout.sessions.create({
+        line_items:[
+            {
+                price: transaction.plan === 'basic_plan' ? basicPriceId : proPriceId,
+                quantity: 1
+            }
+        ],
+        metadata: {
+            type: 'create',
+            plan: transaction.plan,
+            teamName: transaction.teamName,
+            buyerId: user._id.toString(),
+            teamThemeColor: transaction.teamThemeColor,
+            invitedMembers: transaction.invitedMembers
+        },
+        mode: 'subscription',
+
+        success_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/dashboard`,
+        cancel_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/dashboard`
     })
 
     redirect(session.url!)

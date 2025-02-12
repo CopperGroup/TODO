@@ -9,6 +9,7 @@ import { fetchUsersTeams } from "@/lib/actions/team.actions"
 import { cn, getTextColorBasedOnBackground, sleep } from "@/lib/utils"
 import Link from "next/link"
 import { currentUser } from '@clerk/nextjs/server'
+import { Button } from "@/components/ui/button"
 
 // Mock data (replace with actual data fetching in a real application)
 const mockTeams = [
@@ -58,7 +59,11 @@ export default async function TeamsPage() {
     <div className="container mx-auto p-4 space-y-8">
       <div className="flex justify-between items-center">
         <h1 className="text-4xl font-bold">My Teams</h1>
-        <CreateTeamForm />
+        <Button
+          className="coppergroup-gradient text-gray-100 p-0"
+        >
+          <Link href="/dashboard/createTeam" className="flex items-center justify-center font-medium px-3"><PlusCircle className="mr-2 h-4 w-4" /> Create Team</Link>
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

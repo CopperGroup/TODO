@@ -18,11 +18,12 @@ import { Types } from "mongoose";
 type createTeamParams = {
    name: string
    usersEmails: string[],
-   adminClerkId?: string
+   adminId: string,
+   plan: 'basic_plan' | 'pro_plan'
 }
 
 
-export async function createTeam({ name, usersEmails, adminClerkId }: createTeamParams, type?: 'json') {
+export async function createTeam({ name, usersEmails, adminId, plan }: createTeamParams, type?: 'json') {
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -31,11 +32,11 @@ export async function createTeam({ name, usersEmails, adminClerkId }: createTeam
 
     const existingUsers = await User.find({ email: { $in: usersEmails } }).session(session);
 
-    if (!adminClerkId) {
+    if (!adminId) {
       throw new Error(`Error creating team, no admin clerk id`);
     }
 
-    const admin = await User.findOne({ clerkId: adminClerkId }).session(session);
+    const admin = await User.findById(adminId).session(session);
     if (!admin) {
       throw new Error(`Error creating team, no admin user found`);
     }
@@ -49,7 +50,7 @@ export async function createTeam({ name, usersEmails, adminClerkId }: createTeam
       name, 
       members: teamMembers, 
       invitedMembers: usersEmails,
-      plan: 'basic_plan'
+      plan: plan
     }], { session });
 
     for (const user of existingUsers) {

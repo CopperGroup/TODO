@@ -284,6 +284,10 @@
     .custom-scrollbar-blue::-webkit-scrollbar-thumb:hover {
         background: #2973e9
     }
+
+    .text-shadow {
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    }
     
     @keyframes gradientShift {
       0% {

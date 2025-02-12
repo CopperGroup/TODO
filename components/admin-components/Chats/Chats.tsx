@@ -96,7 +96,7 @@ export default function Chats({ stringifiedTeamData, clerkId }: { stringifiedTea
 
       const updatedMesseges = [...selectedChat.messeges, newMessege];
       setSelectedChat({ ...selectedChat, messeges: updatedMesseges });
-      
+
       setMessageContent("");
 
       containerRef.current?.scrollTo({
@@ -114,6 +114,7 @@ export default function Chats({ stringifiedTeamData, clerkId }: { stringifiedTea
         {teamData.chats.map((chat) => {
           const lastMessege = chat.messeges[chat.messeges.length - 1]
           const unreadCount = chat.messeges.filter((msg) => !msg.readBy.find((user) => user.clerkId === clerkId)).length
+          const chatUserInfo = chat.people.filter((p) => p.clerkId != clerkId)[0]
           return (
             <ChatListItem
               key={chat._id}
@@ -124,14 +125,14 @@ export default function Chats({ stringifiedTeamData, clerkId }: { stringifiedTea
             >
               <div className="w-full flex items-center space-x-3">
                 <ChatListItemProfileImage
-                  src={chat.people[0]?.profilePicture || "/default-avatar.png"}
+                  src={chatUserInfo.profilePicture || "/default-avatar.png"}
                   alt={chat.name}
                   className="w-12 h-12 rounded-full"
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-baseline">
                     <ChatListItemHeader className="font-semibold text-gray-900 truncate">
-                      {chat.name}
+                      {chatUserInfo.name}
                     </ChatListItemHeader>
                     <ChatListItemTimeStamp className="text-xs text-gray-500 whitespace-nowrap">
                       {lastMessege ? moment(lastMessege.createdAt).fromNow() : "No messeges"}
@@ -157,7 +158,7 @@ export default function Chats({ stringifiedTeamData, clerkId }: { stringifiedTea
         <ChatWrapper className="w-3/4 flex flex-col bg-white">
           <ChatHeader className="bg-white border-b border-gray-200 p-4 flex items-center">
             <ChatHeaderProfileImage
-              src={selectedChat.people[0]?.profilePicture || "/default-avatar.png"}
+              src={selectedChat.people.filter(p => p.clerkId !== clerkId)[0]?.profilePicture || "/default-avatar.png"}
               alt={selectedChat.name}
               className="w-10 h-10 rounded-full"
             />
@@ -188,13 +189,13 @@ export default function Chats({ stringifiedTeamData, clerkId }: { stringifiedTea
             <MessegeInput
               placeholder="Type a messege..."
               className="flex-1 bg-gray-100 border-none rounded-md px-6 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled={selectedChat.people[0].email === "system@kolos.com"}
+              disabled={selectedChat.people.filter(p => p.clerkId !== clerkId)[0].email === "system@kolos.com"}
               onChange={(e) => setMessageContent(e.target.value)}
             />
             <SendMessegeButton
               onClick={handleSendMessage}
               className="ml-4 bg-zinc-800 text-white p-3 rounded-md transition-colors duration-200"
-              disabled={!messageContent.trim() || selectedChat.people[0].email === "system@kolos.com"}
+              disabled={!messageContent.trim() || selectedChat.people.filter(p => p.clerkId !== clerkId)[0].email === "system@kolos.com"}
             >
               <Send size={20} />
             </SendMessegeButton>

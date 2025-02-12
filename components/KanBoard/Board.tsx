@@ -200,6 +200,19 @@ const Board = ({ stringifiedBoard }: { stringifiedBoard: string }) => {
     updateViewportIndicator()
   }, [updateViewportIndicator])
 
+  const handleMinimapDrag = (dragX: number) => {
+    if (containerRef.current) {
+      const { scrollWidth, clientWidth } = containerRef.current;
+      const minimapWidth = 100; // Replace with actual minimap width in pixels
+      const scrollRatio = scrollWidth / minimapWidth;
+      const newScrollLeft = dragX * scrollRatio;
+      
+      containerRef.current.scrollLeft = newScrollLeft;
+    }
+  };
+  
+
+  
   return (
     <div className="relative h-full w-full overflow-hidden">
       <div className="h-full w-full overflow-scroll no-scrollbar" ref={containerRef}>
@@ -278,6 +291,10 @@ const Board = ({ stringifiedBoard }: { stringifiedBoard: string }) => {
             </div>
           </div>
           <motion.div
+            drag="x"
+            dragConstraints={{ left: 0, right: 100 }} // Adjust constraints based on the minimap size
+            dragElastic={0}
+            onDrag={(e, info) => handleMinimapDrag(info.point.x)}
             layout
             transition={{
               type: "spring",
@@ -291,6 +308,7 @@ const Board = ({ stringifiedBoard }: { stringifiedBoard: string }) => {
               width: `${viewportIndicator.width}%`,
             }}
           />
+
         </div>
       </div>
     </div>

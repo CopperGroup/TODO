@@ -218,7 +218,7 @@ export function AdminSidebar({ user, teams }: { user: UserType, teams: { teamId:
                 <span className="text-sm font-medium truncate w-full">{user.name}</span>
                 <span className="text-xs text-gray-500 truncate w-full">{user.email}</span>
               </div>
-              <Settings className="h-4 w-4 text-gray-500 flex-shrink-0" />
+              {/* <Settings className="h-4 w-4 text-gray-500 flex-shrink-0" /> */}
             </Button>
             </SidebarMenuButton>
           </SidebarMenuItem>

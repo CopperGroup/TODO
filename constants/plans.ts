@@ -8,7 +8,7 @@ const plans = {
         boards: 1,
         tasks: Infinity,
         storage: 50,
-        task_tracking: "basic", // Task tracking level
+        task_tracking: "basic",
         custom_columns: false,
         chats: false
       }

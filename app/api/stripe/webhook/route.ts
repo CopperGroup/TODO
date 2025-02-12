@@ -1,4 +1,5 @@
 // import { createTransaction } from "@/lib/actions/transaction.action";
+import { createTeam } from "@/lib/actions/team.actions";
 import { createTransaction } from "@/lib/actions/transaction.actions";
 import { NextResponse } from "next/server";
 import stripe from "stripe";
@@ -24,10 +25,23 @@ export async function POST(request: Request) {
   if (eventType === "checkout.session.completed") {
     const { id, amount_total, metadata } = event.data.object;
 
+    let teamId = metadata?.teamId || '';
+
+    if(metadata?.type === "create") {
+        const createdTeam = await createTeam({
+            name: metadata.teamName,
+            usersEmails: metadata.invitedMembers.split(", "),
+            adminId: metadata.buyerId,
+            plan: metadata.plan as 'basic_plan' | 'pro_plan'
+        })
+
+        teamId = createdTeam._id
+    } 
+
     const transaction = {
       stripeId: id,
       plan: metadata?.plan || "",
-      teamId: metadata?.teamId || '',
+      teamId: teamId,
       buyerId: metadata?.buyerId || "",
       createdAt: new Date(),
     };
