@@ -110,7 +110,9 @@ export default function CreateTeamPage() {
         adminClerkId: user?.id
       }, 'json')
 
-      const transaction = { plan: data.billingPlan, teamId: JSON.parse(result), clerkId: user?.id };
+      const createdTeam = JSON.parse(result);
+
+      const transaction = { plan: data.billingPlan, teamId: createdTeam._id, clerkId: user?.id };
       await checkoutPlan(transaction);
       // await createTeam(
       //   {
