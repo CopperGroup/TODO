@@ -28,6 +28,7 @@ export async function createTeam({ name, usersEmails, themeColor, adminId, plan 
   const session = await mongoose.startSession();
   session.startTransaction();
 
+  console.log( name, usersEmails, adminId, themeColor, plan )
   try {
     await connectToDB();
 
