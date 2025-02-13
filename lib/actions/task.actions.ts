@@ -9,6 +9,7 @@ import Team from "../models/team.model";
 import User from "../models/user.model";
 import { connectToDB } from "../mongoose";
 import { PopulatedTaskType } from "../types";
+import { revalidatePath } from "next/cache";
 
 export async function updateTaskColumn({ taskId, columnId }: { taskId: string, columnId: string }) {
     try {
@@ -77,6 +78,7 @@ export async function createNewTask({ clerkId, teamId, boardId, columnId, descri
             ])
             .exec();
         
+        revalidatePath(`/dashboard/team/${teamId}`)
         if (type === "json") {
           return JSON.stringify(populatedTask);
         } else {

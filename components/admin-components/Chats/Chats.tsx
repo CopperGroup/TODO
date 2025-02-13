@@ -16,9 +16,6 @@ import {
   ChatListItemTimeStamp,
   ChatListItemUnreadCount,
   ChatWrapper,
-  Messege,
-  MessegeAuthorProfileImage,
-  MessegeContent,
   MessegeInput,
   SendMessegeButton,
 } from "@/components/ui/chat"
@@ -28,92 +25,131 @@ import moment from "moment"
 import { createMessege, handleMessegesRead } from "@/lib/actions/messeges.actions"
 import MessegeItem from "./Messege"
 import Link from "next/link"
+import { Realtime } from "ably"
 
 export default function Chats({ stringifiedTeamData, clerkId }: { stringifiedTeamData: string; clerkId: string }) {
   const [teamData, setTeamData] = useState<TeamPopulatedChatsType>(JSON.parse(stringifiedTeamData))
   const [selectedChat, setSelectedChat] = useState<TeamPopulatedChatsType["chats"][number] | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const ablyRef = useRef<Realtime | null>(null)
+  const [messageContent, setMessageContent] = useState<string>("")
+  const [firstLoad, setFirstLoad] = useState(true);
+
+  
+  useEffect(() => {
+    const ably = new Realtime({ key: process.env.NEXT_PUBLIC_ABLY_API_KEY })
+    ablyRef.current = ably
+    
+    return () => {
+      ably.close()
+    }
+  }, [])
+  
+  useEffect(() => {
+    if (firstLoad) {
+      setFirstLoad(false); 
+    }
+  }, []);
 
   useEffect(() => {
-    const markMessegesAsRead = async () => {
-      if (selectedChat) {
-        const unreadMessegeIds = selectedChat.messeges
-          .filter((messege) => !messege.readBy.find((user) => user.clerkId === clerkId))
-          .map((messege) => messege._id);
+    if (!selectedChat || !ablyRef.current) return;
   
-        if (unreadMessegeIds.length > 0) {
-          console.log("Marking messeges as read:", unreadMessegeIds);
+    const channel = ablyRef.current.channels.get(`chat:${selectedChat._id}`);
   
-          try {
-            await handleMessegesRead({ messegesIds: unreadMessegeIds, clerkId });
+    channel.subscribe("new-message", (message) => {
+      const newMessege = message.data;
   
-            const updatedChats = teamData.chats.map((chat) => {
-              if (chat._id === selectedChat._id) {
-                const updatedMesseges = chat.messeges.map((messege) => {
-                  if (unreadMessegeIds.includes(messege._id)) {
-                    return {
-                      ...messege,
-                      readBy: [...messege.readBy, { _id: "id", clerkId }], // Update the local state with the read messege
-                    };
-                  }
-                  return messege;
-                });
-                return { ...chat, messeges: updatedMesseges };
-              }
-              return chat;
-            });
+      setSelectedChat((prevChat) => {
+        if (!prevChat) return null;
+        return { ...prevChat, messeges: [...prevChat.messeges, newMessege] };
+      });
   
-            setTeamData({ ...teamData, chats: updatedChats });
-          } catch (error) {
-            console.error("Failed to mark messeges as read:", error);
-          }
-        }
-      }
+      markMessagesAsRead(selectedChat);
+    });
+  
+    markMessagesAsRead(selectedChat);
+  
+    return () => {
+      channel.unsubscribe("new-message");
     };
+  }, [selectedChat]);
   
-    markMessegesAsRead();
-  }, [selectedChat, clerkId]);
+  useEffect(() => {
+    if (!containerRef.current) return;
   
-
-  const handleChatSelect = (chat: TeamPopulatedChatsType["chats"][number]) => {
-    setSelectedChat(chat)
-  }
-
-  const [messageContent, setMessageContent] = useState<string>("");
-
-  const handleSendMessage = async () => {
-    if (!messageContent.trim() || !selectedChat) return;
-
-    try {
-      const content = messageContent;
-
-      setMessageContent("");
-
-      const result = await createMessege({
-        sender: selectedChat.people[1]._id,
-        content: content,
-        messegeType: "text",
-        chat: selectedChat._id,
-      }, 'json');
-
-
-      const newMessege = JSON.parse(result)
-
-      const updatedMesseges = [...selectedChat.messeges, newMessege];
-      setSelectedChat({ ...selectedChat, messeges: updatedMesseges });
-
-      
+    const observer = new MutationObserver(() => {
       containerRef.current?.scrollTo({
         top: containerRef.current.scrollHeight,
         behavior: "smooth",
       });
-    } catch (error) {
-      console.error("Failed to send message:", error);
+    });
+  
+    observer.observe(containerRef.current, { childList: true, subtree: true });
+  
+    return () => observer.disconnect();
+  }, [selectedChat]);
+  
+
+  const markMessagesAsRead = async (chat: TeamPopulatedChatsType["chats"][number]) => {
+    const unreadMessages = chat.messeges.filter((msg) => !msg.readBy.find((user) => user.clerkId === clerkId));
+  
+    if (unreadMessages.length > 0) {
+      try {
+        // Send request to mark messages as read
+        await handleMessegesRead({ messegesIds: unreadMessages.map((msg) => msg._id), clerkId });
+  
+        // Update the state to reflect the messages are read
+        setSelectedChat((prevChat) => {
+          if (!prevChat) return null;
+          const updatedMessages = prevChat.messeges.map((msg) => {
+            if (unreadMessages.find((unread) => unread._id === msg._id)) {
+              return {
+                ...msg,
+                readBy: [...msg.readBy, { _id: "_id", clerkId }],
+              };
+            }
+            return msg;
+          });
+          return { ...prevChat, messeges: updatedMessages };
+        });
+      } catch (error) {
+        console.error("Failed to mark messages as read:", error);
+      }
     }
   };
+  
+
+  
+  const handleChatSelect = (chat: TeamPopulatedChatsType["chats"][number]) => {
+    setSelectedChat(chat)
+  }
+
+  const handleSendMessage = async () => {
+    if (!messageContent.trim() || !selectedChat) return
+
+    try {
+      const content = messageContent
+      setMessageContent("")
+
+      const result = await createMessege({
+        sender: selectedChat.people.find(p => p.clerkId === clerkId)!._id,
+        content,
+        messegeType: "text",
+        chat: selectedChat._id,
+      }, 'json')
+
+      const newMessege = JSON.parse(result)
+
+      // Publish message to Ably channel
+      const channel = ablyRef.current?.channels.get(`chat:${selectedChat._id}`)
+      channel?.publish("new-message", newMessege)
+    } catch (error) {
+      console.error("Failed to send message:", error)
+    }
+  }
 
   return (
-    <Chat className="h-screen w-full flex bg-gray-100" ref={containerRef}>
+    <Chat className="h-screen w-full flex bg-gray-100">
       <ChatList className="w-1/4 border-r border-gray-200 bg-white overflow-y-auto custom-scrollbar-white">
         {teamData.chats.map((chat) => {
           const lastMessege = chat.messeges[chat.messeges.length - 1]
@@ -168,9 +204,10 @@ export default function Chats({ stringifiedTeamData, clerkId }: { stringifiedTea
             />
             <ChatHeaderName className="ml-4 font-semibold text-gray-900">{selectedChat.people.filter((p) => p.clerkId != clerkId)[0].name}</ChatHeaderName>
           </ChatHeader>
-          <ChatContent className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
+          <ChatContent className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar" ref={containerRef}>
             {selectedChat.messeges.reduce((acc: JSX.Element[], messege, index, array) => {
               const isFirstUnread =
+                firstLoad &&  // Only show "New" during the initial load
                 !messege.readBy.find((user) => user.clerkId === clerkId) &&
                 (index === 0 || array[index - 1].readBy.find((user) => user.clerkId === clerkId));
 
@@ -185,7 +222,7 @@ export default function Chats({ stringifiedTeamData, clerkId }: { stringifiedTea
               }
 
               acc.push(<MessegeItem key={messege._id} messege={messege} clerkId={clerkId} teamId={teamData._id} />);
-
+              
               return acc;
             }, [])}
           </ChatContent>
@@ -196,6 +233,12 @@ export default function Chats({ stringifiedTeamData, clerkId }: { stringifiedTea
               disabled={selectedChat.people.filter(p => p.clerkId !== clerkId)[0].email === "system@kolos.com"}
               value={messageContent}
               onChange={(e) => setMessageContent(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
             />
             <SendMessegeButton
               onClick={handleSendMessage}

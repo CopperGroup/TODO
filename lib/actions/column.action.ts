@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import Board from "../models/board.model";
 import Column, { ColumnType } from "../models/column.model";
 
@@ -14,10 +15,16 @@ export async function createColumn({ name, boardId }: { name: string, boardId: s
         board: boardId
     })
 
-    await Board.findByIdAndUpdate(boardId, { 
+    const board = await Board.findByIdAndUpdate(
+      boardId, 
+      { 
         $push: { columns: column._id }
-    });
+      },
+      { new: true }
+    );
 
+    revalidatePath(`/dashboard/team/${board.team}`)
+    
     if(type === 'json'){
       return JSON.stringify(column)
     } else {

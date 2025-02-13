@@ -6,6 +6,9 @@ import Column from "../models/column.model";
 import Team from "../models/team.model";
 import { connectToDB } from "../mongoose";
 import { PopulatedBoardType, PopulatedTaskType } from "../types";
+import Comment from "../models/comment.model";
+import User from "../models/user.model";
+import Task from "../models/task.model";
 
 
 export async function fetchBoardById({ boardId }: { boardId: string }): Promise<PopulatedBoardType>;
@@ -43,11 +46,13 @@ export async function fetchBoardById({ boardId }: { boardId: string }, type?: 'j
           },
           {
             path: 'linkedTasks', // Populate author field in tasks
+            model: Task
           },
           {
             path: 'comments', // Populate comments in tasks
-            populate: { path: 'author' }, // Populate author of each comment
-            options: { sort: { createdAt: -1 } }
+            model: Comment,
+            populate: { path: 'author', model: User}, // Populate author of each comment
+            options: { sort: { createdAt: -1 } },
           },
     ]}).exec()
 

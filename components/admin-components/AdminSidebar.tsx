@@ -156,7 +156,7 @@ export function AdminSidebar({ user, teams }: { user: UserType, teams: { teamId:
                         ))}
                         {((selectedTeam?.boards.length || 1)) < plans['pro_plan'].features.boards && (
                           <DropdownMenuItem asChild>
-                            {(selectedTeam ? selectedTeam.boards.length : 1) + 1 < (plans[selectedTeam ? selectedTeam.plan : 'basic_plan'].features.boards) ? (
+                            {(selectedTeam ? selectedTeam.boards.length : 1) < (plans[selectedTeam ? selectedTeam.plan : 'basic_plan'].features.boards) ? (
                                 <Link href={`/dashboard/team/${selectedTeam?.teamId}/board/new`} className="flex items-center gap-2 text-blue-600 cursor-pointer">
                                   <PlusCircle className="h-4 w-4" />
                                   Create New Board 
