@@ -15,10 +15,10 @@ import LinkedTaskItem from "./LinkedTaskItem"
 import AddSubtask from "./AddSubtask"
 import AddLabel from "./AddLabel"
 import UserSelectionCombobox from "./UserSelectionCombobox"
-import type { PopulatedTaskType, PopulatedTeamType, PopulatedColumnType, UserType, TeamTasks } from "@/lib/types"
-import SubtaskList from "./SubtaskList"
+import type { TeamTasks } from "@/lib/types"
 import { addAttachmentsToTask, assignTask, linkTasks, removeAttachmentsFromTask, updateTaskColumn, updateTaskDescription, updateTaskLabels } from "@/lib/actions/task.actions"
 import TaskAttachments from "./TaskAttachments"
+import SubtaskList from "./SubtaskList"
 
 interface InfoListAttachmentProps {
   task: TeamTasks["tasks"][number]
