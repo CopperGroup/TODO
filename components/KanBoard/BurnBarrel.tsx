@@ -60,7 +60,8 @@ const BurnBarrel = ({ cards, setCards }: { cards: TaskType[], setCards: React.Di
         boardId: taskToDelete.board,
         commentIds: taskToDelete.comments.map(comment => comment._id),
         subTasksIds: taskToDelete.subTasks.map(subTask => subTask._id),
-        tasksLinkedToThisIds: taskToDelete.tasksLinkedToThis
+        tasksLinkedToThisIds: taskToDelete.tasksLinkedToThis,
+        attachments: taskToDelete.attachments
       }])
     }
   }

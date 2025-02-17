@@ -12,6 +12,8 @@ import {
   ChevronRight,
   PlusCircle,
   Inbox,
+  Pen,
+  Video,
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -55,7 +57,9 @@ export function AdminSidebar({ user, teams }: { user: UserType, teams: { teamId:
     { title: "Tasks", icon: ListTodo, url: `/dashboard/team/${selectedTeam?.teamId}/tasks` },
     { title: "Boards", icon: LayoutDashboard, url: "/dashboard/boards" },
     { title: "Members", icon: Users, url: `/dashboard/team/${selectedTeam?.teamId}/members` },
-    { title: "Messeges", icon: Inbox, url: `/dashboard/team/${selectedTeam?.teamId}/messeges`}
+    { title: "Messages", icon: Inbox, url: `/dashboard/team/${selectedTeam?.teamId}/messeges`},
+    { title: "Canvas", icon: Pen, url: `/dashboard/team/${selectedTeam?.teamId}/canvas`},
+    { title: "Meetings", icon: Video, url: `/dashboard/team/${selectedTeam?.teamId}/meetings`}
   ]
 
   React.useEffect(() => {
@@ -89,13 +93,6 @@ export function AdminSidebar({ user, teams }: { user: UserType, teams: { teamId:
                   className="w-full justify-between bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
                 >
                   <div className="flex items-center gap-3">
-                    {/* <Image
-                      src={selectedTeam.image || "/placeholder.svg"}
-                      alt={selectedTeam.name}
-                      width={32}
-                      height={32}
-                      className="rounded-md"
-                    /> */}
                       <div className="w-8 h-8 text-lg font-semibold text-center rounded-md pt-[1px]" style={{ background: selectedTeam?.teamColor}}><span style={{ color: getTextColorBasedOnBackground(selectedTeam?.teamColor || "#ffffff")}}>{selectedTeam?.name.slice(0, 1)}</span></div>
                     <span className="font-semibold">{selectedTeam?.name}</span>
                     {selectedTeam?.plan === "basic_plan" ? (
@@ -115,7 +112,7 @@ export function AdminSidebar({ user, teams }: { user: UserType, teams: { teamId:
                       onSelect={() => setSelectedTeam(team)}
                       className="flex items-center gap-3 py-2"
                     >
-                      <div className="w-8 h-8 text-lg font-semibold text-center rounded-md pt-[1px]" style={{ background: team.teamColor}}><span style={{ color: getTextColorBasedOnBackground(team.teamColor)}}>{team.name.slice(0, 1)}</span></div>
+                      <div className={`w-8 h-8 text-lg font-semibold text-center rounded-md pt-[1px] ${team.plan === "pro_plan" ? "coppergroup-gradient" : ""}`} style={ team.plan === "basic_plan" ? { background: team.teamColor } : {}}><span style={{ color: getTextColorBasedOnBackground(team.teamColor)}}>{team.name.slice(0, 1)}</span></div>
                       {team.name}
                       {team.teamId === selectedTeam?.teamId && <Check className="ml-auto h-4 w-4 text-green-500" />}
                     </DropdownMenuItem>

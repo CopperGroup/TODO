@@ -626,7 +626,10 @@ export async function fetchTeamTasks({ teamId }: { teamId: string }, type?: 'jso
               path: 'parentId'
             },
             {
-              path: 'subTasks'
+              path: 'subTasks',
+              populate: {
+                path: 'assignedTo'
+              }
             },
             {
               path: 'linkedTasks'

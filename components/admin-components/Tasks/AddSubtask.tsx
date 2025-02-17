@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import { FiPlus, FiX } from "react-icons/fi"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,16 +16,16 @@ import {
 } from "@/components/ui/combobox"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import type { PopulatedTaskType, PopulatedTeamType } from "@/lib/types"
+import type { PopulatedTaskType, PopulatedTeamType, TeamTasks } from "@/lib/types"
 import { createNewTaskSubtask } from "@/lib/actions/task.actions"
 
 interface AddSubtaskProps {
-  onSubtaskAdd: (newSubtask: PopulatedTaskType) => void
-  parentTaskId: string
-  team: PopulatedTeamType
-  currentUser: { clerkId: string; email: string }
-  parentTaskColumnId: string
-  boardId: string
+  onSubtaskAdd: (newSubtask: TeamTasks['tasks'][number]['subTasks'][number]) => void;
+  parentTaskId: string;
+  team: TeamTasks;
+  currentUser: { clerkId: string; email: string };
+  parentTaskColumnId: string;
+  boardId: string;
 }
 
 const AddSubtask: React.FC<AddSubtaskProps> = ({
@@ -36,18 +36,16 @@ const AddSubtask: React.FC<AddSubtaskProps> = ({
   parentTaskColumnId,
   boardId,
 }) => {
-  const [isAdding, setIsAdding] = useState(false)
-  const [subtaskDescription, setSubtaskDescription] = useState("")
-  const [subtaskType, setSubtaskType] = useState<"Issue" | "Bug">("Issue")
-  const [assigneeInput, setAssigneeInput] = useState("")
-  const [selectedAssignees, setSelectedAssignees] = useState<
-    { _id: string; name: string; email: string; profilePicture: string }[]
-  >([])
-  const [comboboxOpen, setComboboxOpen] = useState(false)
+  const [isAdding, setIsAdding] = useState(false);
+  const [subtaskDescription, setSubtaskDescription] = useState('');
+  const [subtaskType, setSubtaskType] = useState<'Issue' | 'Bug'>('Issue');
+  const [assigneeInput, setAssigneeInput] = useState('');
+  const [selectedAssignees, setSelectedAssignees] = useState<TeamTasks['tasks'][number]['assignedTo']>([]);
+  const [comboboxOpen, setComboboxOpen] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!subtaskDescription.trim()) return
+    e.preventDefault();
+    if (!subtaskDescription.trim()) return;
 
     const result = await createNewTaskSubtask(
       {
@@ -60,32 +58,33 @@ const AddSubtask: React.FC<AddSubtaskProps> = ({
         taskType: subtaskType,
         assigneesIds: selectedAssignees.map((as) => as._id),
       },
-      "json",
-    )
+      'json'
+    );
 
-    setSubtaskDescription("")
-    setSubtaskType("Issue")
-    setSelectedAssignees([])
-    setIsAdding(false)
+    const newSubtask = JSON.parse(result);
+    setSubtaskDescription('');
+    setSubtaskType('Issue');
+    setSelectedAssignees([]);
+    setIsAdding(false);
 
-    onSubtaskAdd(JSON.parse(result))
-  }
+    onSubtaskAdd(newSubtask);
+  };
 
   const filteredUsers = team.members.filter(
     (user) =>
       !selectedAssignees.some((assignee) => assignee._id === user.user._id) &&
-      user.user.name.toLowerCase().includes(assigneeInput.toLowerCase()),
-  )
+      user.user.name.toLowerCase().includes(assigneeInput.toLowerCase())
+  );
 
-  const handleAddAssignee = (assignee: { _id: string; name: string; email: string; profilePicture: string }) => {
-    setSelectedAssignees([...selectedAssignees, assignee])
-    setAssigneeInput("")
-    setComboboxOpen(false)
-  }
+  const handleAddAssignee = (assignee: TeamTasks['tasks'][number]['assignedTo'][number]) => {
+    setSelectedAssignees([...selectedAssignees, assignee]);
+    setAssigneeInput('');
+    setComboboxOpen(false);
+  };
 
   const handleRemoveAssignee = (assigneeId: string) => {
-    setSelectedAssignees(selectedAssignees.filter((assignee) => assignee._id !== assigneeId))
-  }
+    setSelectedAssignees(selectedAssignees.filter((assignee) => assignee._id !== assigneeId));
+  };
 
   return (
     <div className="mt-4">
@@ -139,6 +138,7 @@ const AddSubtask: React.FC<AddSubtaskProps> = ({
                         handleAddAssignee({
                           _id: user.user._id,
                           name: user.user.name,
+                          clerkId: user.user.clerkId,
                           email: user.user.email,
                           profilePicture: user.user.profilePicture,
                         })
@@ -209,4 +209,3 @@ const AddSubtask: React.FC<AddSubtaskProps> = ({
 }
 
 export default AddSubtask
-

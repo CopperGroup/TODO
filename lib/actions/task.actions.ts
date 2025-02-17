@@ -96,6 +96,7 @@ type DeleteTaskArgs = {
   commentIds: string[];
   subTasksIds: string[];
   tasksLinkedToThisIds: string[];
+  attachments: string[]
 }[];
 
 export async function deleteTasks(tasks: DeleteTaskArgs) {
@@ -109,7 +110,7 @@ export async function deleteTasks(tasks: DeleteTaskArgs) {
     await connectToDB();
 
     for (const task of tasks) {
-      const { taskId, teamId, boardId, commentIds, subTasksIds, tasksLinkedToThisIds } = task;
+      const { taskId, teamId, boardId, commentIds, subTasksIds, tasksLinkedToThisIds, attachments } = task;
 
       // Step 2: Delete related comments within the transaction
       await Comment.deleteMany({ _id: { $in: commentIds } }).session(session);
@@ -129,11 +130,20 @@ export async function deleteTasks(tasks: DeleteTaskArgs) {
       await Task.deleteOne({ _id: taskId }).session(session);
 
       console.log(`Task ${taskId} and related data have been deleted.`);
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/deleteManyFiles`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+
+        body: JSON.stringify({ urls: attachments }),
+      });
     }
 
     // Commit the transaction
     await session.commitTransaction();
     session.endSession();
+
+    revalidatePath(`/dashboard/team/${tasks[0].teamId}/board/${tasks[0].boardId}`)
   } catch (error: any) {
     // If an error occurs, abort the transaction
     await session.abortTransaction();
@@ -303,6 +313,7 @@ export async function updateTaskLabels({ taskId, labels }: { taskId: string, lab
           populate: [
             { path: 'author' },
             { path: 'assignedTo' },
+            { path: 'column'}
           ],
         },
         { path: 'linkedTasks' },

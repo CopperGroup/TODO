@@ -1,30 +1,29 @@
-"use client"
-
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import type { PopulatedColumnType, PopulatedTaskType } from "@/lib/types"
-import { ChevronDown } from "lucide-react"
-import type { SetStateAction } from "react"
-import type React from "react"
+import type React from "react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import type { TeamTasks } from "@/lib/types";
+import { ChevronDown } from "lucide-react";
 
 interface SubtaskListProps {
-  subtasks: PopulatedTaskType[]
-  onColumnChange: (subtaskId: string, column: string) => void
-  value: string
-  setSubtaskAcorditionValue: React.Dispatch<SetStateAction<string>>
-  columns: PopulatedColumnType[]
+  subtasks: TeamTasks["tasks"][number]["subTasks"];
+  onColumnChange: (subtaskId: string, column: string) => void;
+  value: string;
+  setSubtaskAcorditionValue: React.Dispatch<React.SetStateAction<string>>;
+  columns: TeamTasks["boards"][number]["columns"];
 }
 
-export default function SubtaskList({
+const SubtaskList: React.FC<SubtaskListProps> = ({
   subtasks,
   onColumnChange,
   value,
   setSubtaskAcorditionValue,
   columns,
-}: SubtaskListProps) {
+}) => {
+
+  console.log(subtasks)
   return (
     <Accordion type="single" collapsible className="w-full" value={value}>
       <AccordionItem value="subtasks" className="border-none">
@@ -45,7 +44,7 @@ export default function SubtaskList({
                 <div className="flex items-center gap-3 flex-grow">
                   <Badge
                     className={`${
-                      subtask.type === "Bug" ? "bg-red-100 text-red-800" : "bg-blue-100 text-blue-800"
+                      subtask.type === "Bug" ? "bg-red-100 text-red-800 hover:bg-red-200" : "bg-blue-100 text-blue-800 hover:bg-blue-200"
                     } text-xs px-2 py-1`}
                   >
                     {subtask.type}
@@ -59,8 +58,8 @@ export default function SubtaskList({
                         <div className="flex -space-x-2">
                           {subtask.assignedTo.slice(0, 2).map((assignee, index) => (
                             <Avatar key={index} className="w-6 h-6 border-2 border-white">
-                              <AvatarImage src={assignee.profilePicture} />
-                              <AvatarFallback>{assignee.name[0]}</AvatarFallback>
+                              <AvatarImage src={assignee.profilePicture || ""} />
+                              <AvatarFallback>{assignee.name.charAt(0)}</AvatarFallback>
                             </Avatar>
                           ))}
                           {subtask.assignedTo.length > 2 && (
@@ -76,18 +75,19 @@ export default function SubtaskList({
                     </Tooltip>
                   </TooltipProvider>
                   <Select
-                    defaultValue={subtask.column as string}
+                    defaultValue={subtask.column}
                     onValueChange={(value) => onColumnChange(subtask._id, value)}
                   >
-                    <SelectTrigger className="h-7 w-[120px] text-xs bg-white border-gray-300 focus:ring-blue-500">
+                    <SelectTrigger className="h-7 w-[120px] text-xs bg-gray-50 border-zinc-200 focus:ring-blue-500">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-white border-gray-300 focus:ring-blue-500">
+                    <SelectContent className="bg-neutral-800 border-zinc-700 focus:ring-blue-500">
                       {columns.map((column) => (
                         <SelectItem
-                          className="text-xs font-medium focus:bg-gray-100"
+                          className="text-xs font-medium focus:bg-neutral-700"
                           key={column._id}
                           value={column._id}
+                          style={{ color: column.textColor }}
                         >
                           {column.name}
                         </SelectItem>
@@ -101,6 +101,7 @@ export default function SubtaskList({
         </AccordionContent>
       </AccordionItem>
     </Accordion>
-  )
-}
+  );
+};
 
+export default SubtaskList;

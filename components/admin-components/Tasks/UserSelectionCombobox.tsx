@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 import {
   Combobox,
   ComboboxContent,
@@ -9,27 +9,27 @@ import {
   ComboboxList,
   ComboboxTrigger,
   ComboboxEmpty,
-} from "@/components/ui/combobox"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import type { PopulatedTeamType, UserType } from "@/lib/types"
+} from "@/components/ui/combobox";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { TeamTasks } from "@/lib/types";
 
 interface UserSelectionComboboxProps {
-  team: PopulatedTeamType
-  assignees: UserType[]
-  onUserSelect: (userId: string) => void
+  team: TeamTasks;
+  assignees: TeamTasks["tasks"][number]["assignedTo"];
+  onUserSelect: (userId: string) => void;
 }
 
 const UserSelectionCombobox: React.FC<UserSelectionComboboxProps> = ({ team, assignees, onUserSelect }) => {
-  const [assigneeInput, setAssigneeInput] = useState("")
-  const [comboboxOpen, setComboboxOpen] = useState(false)
+  const [assigneeInput, setAssigneeInput] = useState("");
+  const [comboboxOpen, setComboboxOpen] = useState(false);
 
   const filteredUsers = team.members.filter((member) => {
-    const searchInput = assigneeInput.toLowerCase()
+    const searchInput = assigneeInput.toLowerCase();
     return (
       !assignees.some((a) => a._id === member.user._id) &&
       (member.user.name.toLowerCase().includes(searchInput) || member.user.email.toLowerCase().includes(searchInput))
-    )
-  })
+    );
+  });
 
   return (
     <Combobox open={comboboxOpen} onOpenChange={setComboboxOpen}>
@@ -48,16 +48,16 @@ const UserSelectionCombobox: React.FC<UserSelectionComboboxProps> = ({ team, ass
           {filteredUsers.map((member) => (
             <ComboboxItem
               key={member.user._id}
-              value={member.user.email}
+              value={member.user._id}
               onSelect={() => {
-                onUserSelect(member.user._id)
-                setAssigneeInput("")
-                setComboboxOpen(false)
+                onUserSelect(member.user._id);
+                setAssigneeInput("");
+                setComboboxOpen(false);
               }}
               className="flex items-center p-2 hover:bg-gray-100"
             >
               <Avatar className="w-6 h-6 mr-2">
-                <AvatarImage src={member.user.profilePicture} alt={member.user.name} />
+                <AvatarImage src={member.user.profilePicture || ""} alt={member.user.name} />
                 <AvatarFallback>{member.user.name.charAt(0)}</AvatarFallback>
               </Avatar>
               <span className="font-medium text-gray-900">{member.user.name}</span>
@@ -67,8 +67,7 @@ const UserSelectionCombobox: React.FC<UserSelectionComboboxProps> = ({ team, ass
         </ComboboxList>
       </ComboboxContent>
     </Combobox>
-  )
-}
+  );
+};
 
-export default UserSelectionCombobox
-
+export default UserSelectionCombobox;

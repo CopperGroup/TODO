@@ -1,5 +1,6 @@
 "use client"
 
+import type React from "react"
 import { useState } from "react"
 import { FiLink } from "react-icons/fi"
 import {
@@ -11,13 +12,24 @@ import {
   ComboboxTrigger,
   ComboboxEmpty,
 } from "@/components/ui/combobox"
-import type { PopulatedTaskType } from "@/lib/types"
+import type { TeamTasks } from "@/lib/types"
 
 interface LinkedTaskSelectionComboboxProps {
-  allTasks: PopulatedTaskType[]
+  allTasks: TeamTasks['tasks']
   currentTaskId: string
   linkedTaskIds: string[]
-  onTaskSelect: (taskId: string) => void
+  onTaskSelect: (task: {
+    _id: string;
+    description: string;
+    type: string;
+    location: "Board" | "Backlog";
+    author: string;
+    createdAt: Date;
+    column: string;
+    board: string;
+    assignedTo: string[];
+    parentId?: string;
+  }) => void
 }
 
 const LinkedTaskSelectionCombobox: React.FC<LinkedTaskSelectionComboboxProps> = ({
@@ -33,7 +45,8 @@ const LinkedTaskSelectionCombobox: React.FC<LinkedTaskSelectionComboboxProps> = 
     (t) =>
       t.description.toLowerCase().includes(linkedTaskInput.toLowerCase()) &&
       t._id !== currentTaskId &&
-      !linkedTaskIds.includes(t._id),
+      !linkedTaskIds.includes(t._id) &&
+      !t.parentId
   )
 
   return (
@@ -54,7 +67,18 @@ const LinkedTaskSelectionCombobox: React.FC<LinkedTaskSelectionComboboxProps> = 
             <ComboboxItem
               key={task._id}
               value={task._id}
-              onSelect={() => onTaskSelect(task._id)}
+              onSelect={() => onTaskSelect({
+                _id: task._id,
+                description: task.description,
+                type: task.type,
+                location: task.location,
+                author: task.author._id,
+                createdAt: task.createdAt,
+                column: task.column._id,
+                board: task.board._id,
+                assignedTo: task.assignedTo.map(a => a._id),
+                parentId: task.parentId
+              })}
               className="flex items-center p-2 hover:bg-gray-100"
             >
               <FiLink className="mr-2 h-4 w-4 text-gray-500" />
@@ -68,4 +92,3 @@ const LinkedTaskSelectionCombobox: React.FC<LinkedTaskSelectionComboboxProps> = 
 }
 
 export default LinkedTaskSelectionCombobox
-

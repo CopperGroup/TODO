@@ -144,18 +144,103 @@ export type TeamPopulatedChatsType = Omit<TeamType, "chats"> & {
   }[];
 };
 
-export type TeamTasks = TeamType & {
+export type TeamTasks = {
+  _id: string;
+  name: string;
+  themeColor: string;
+  plan: string;
   members: {
-    user: UserType;
+    user: {
+      _id: string;
+      name: string;
+      clerkId: string;
+      email: string;
+      profilePicture?: string;
+      online?: boolean;
+    };
     role: "Admin" | "Member";
   }[];
-  tasks: (TaskType & {
-    author: User;
-    column: ColumnType;
-    board: BoardType & { columns: ColumnType[] };
-    assignedTo: User[];
-    parentId: TaskType | null;
-    subTasks: TaskType[];
-    linkedTasks: TaskType[];
-  })[];
+  boards: {
+    _id: string;
+    name: string;
+    columns: {
+      _id: string;
+      name: string;
+      textColor: string;
+      board: string;
+    }[];
+  }[];
+  tasks: {
+    _id: string;
+    description: string;
+    type: string;
+    location: "Board" | "Backlog";
+    attachments: string[];
+    labels: string[];
+    author: {
+      _id: string;
+      name: string;
+      email: string;
+      profilePicture?: string
+    };
+    createdAt: Date,
+    column: {
+      _id: string;
+      name: string;
+      textColor: string;
+    };
+    board: {
+      _id: string;
+      name: string;
+      columns: {
+        _id: string;
+        name: string;
+        textColor: string;
+        board: string;
+      }[];
+    };
+    assignedTo: {
+      _id: string;
+      name: string;
+      profilePicture?: string,
+      email: string, 
+      clerkId: string,
+    }[];
+    parentId?: string;
+    subTasks: {
+      _id: string;
+      description: string;
+      type: string;
+      location: "Board" | "Backlog";
+      author: {
+        _id: string;
+        name: string;
+        email: string;
+        profilePicture?: string
+      };
+      createdAt: Date,
+      column: string;
+      board: string;
+      assignedTo: {
+        _id: string;
+        name: string;
+        profilePicture?: string,
+        email: string, 
+        clerkId: string,
+      }[];
+      parentId?: string;
+    }[];
+    linkedTasks: {
+      _id: string;
+      description: string;
+      type: string;
+      location: "Board" | "Backlog";
+      author: string;
+      createdAt: Date,
+      column: string;
+      board: string;
+      assignedTo: string[];
+      parentId?: string;
+    }[];
+  }[];
 };

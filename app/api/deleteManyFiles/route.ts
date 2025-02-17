@@ -25,7 +25,7 @@ export async function DELETE(req: NextRequest) {
       return match ? match[1] : null;
     };
 
-    const publicIds = urls.map(extractPublicId).filter(Boolean);
+    const publicIds = urls.map(url => extractPublicId(url))
 
     if (publicIds.length === 0) {
       return new NextResponse("No valid Cloudinary URLs provided", { status: 400 });

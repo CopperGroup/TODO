@@ -1,19 +1,16 @@
-"use client"
-
+import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { type SetStateAction, useState } from "react"
 
-const AddLabel = ({
-  taskId,
-  onLabelAdd,
-  setIsAddingLabel,
-}: {
+interface AddLabelProps {
   taskId: string
   onLabelAdd: (newLabel: string) => void
-  setIsAddingLabel: React.Dispatch<SetStateAction<boolean>>
-}) => {
+  setIsAddingLabel: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+const AddLabel: React.FC<AddLabelProps> = ({ taskId, onLabelAdd, setIsAddingLabel }) => {
   const [label, setLabel] = useState("")
+
   return (
     <div className="flex items-center gap-2">
       <Input
@@ -39,4 +36,3 @@ const AddLabel = ({
 }
 
 export default AddLabel
-

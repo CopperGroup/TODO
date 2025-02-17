@@ -8,10 +8,10 @@ const Page = async ({ params }: { params: { id: string } }) => {
 
     if(!params.id) return
 
-    const stringifiedTeamTasks = await fetchTeamTasks({ teamId: params.id }, 'json')
+    const stringifiedTeam = await fetchTeamTasks({ teamId: params.id }, 'json')
 
     return (
-        <TaskBoard stringifiedTeamTasks={stringifiedTeamTasks} currentUser={{clerkId: user?.id as string, email: user?.primaryEmailAddress?.emailAddress as string }}/>
+        <TaskBoard stringifiedTeam={stringifiedTeam} currentUser={{clerkId: user?.id as string, email: user?.primaryEmailAddress?.emailAddress as string }}/>
     )
 }
 
