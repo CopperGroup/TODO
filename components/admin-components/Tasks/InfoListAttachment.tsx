@@ -288,6 +288,7 @@ const handleDescriptionSave = async () => {
 
         <Separator className="bg-gray-200" />
 
+
         <SubtaskList
           subtasks={task.subTasks}
           onColumnChange={handleSubtaskColumnChange}
