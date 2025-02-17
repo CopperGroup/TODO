@@ -18,7 +18,8 @@ import UserSelectionCombobox from "./UserSelectionCombobox"
 import type { TeamTasks } from "@/lib/types"
 import { addAttachmentsToTask, assignTask, linkTasks, removeAttachmentsFromTask, updateTaskColumn, updateTaskDescription, updateTaskLabels } from "@/lib/actions/task.actions"
 import TaskAttachments from "./TaskAttachments"
-import SubtaskList from "./SubtaskList"
+import SubtaskList from "@/components/admin-components/Tasks/SubtaskList"
+
 
 interface InfoListAttachmentProps {
   task: TeamTasks["tasks"][number]
