@@ -23,7 +23,7 @@ const Meeting  = ({ params }: { params: { meetingId: string } }) => {
     );
   
     return (
-        <div className='relative h-screen w-full'>
+        <div className='relative h-full w-full'>
             <StreamCall call={call}>
                 <StreamTheme>
                     {isSetupComplete ? (
