@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/button"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { ChevronDown } from "lucide-react"
 import { motion } from "framer-motion"
-import { useUpload } from "@/lib/hooks/useUpload"
-import { useDeleteFile } from "@/lib/hooks/useDeleteFile"
+import { useUpload } from "@/hooks/useUpload"
+import { useDeleteFile } from "@/hooks/useDeleteFile"
 
 interface TaskAttachmentsProps {
   attachments: string[]

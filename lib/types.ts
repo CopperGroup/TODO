@@ -244,3 +244,12 @@ export type TeamTasks = {
     }[];
   }[];
 };
+
+import type { StreamVideoParticipant } from "@stream-io/video-react-sdk"
+
+export type SortingFunction = (a: StreamVideoParticipant, b: StreamVideoParticipant) => number
+
+export interface VideoGridProps {
+  itemsPerPage?: number
+  className?: string
+}

@@ -351,6 +351,51 @@
         --copper-700: #994c00;
         --copper-800: #663300;
         --copper-900: #331a00;
+        --str-video__primary-color: #005fff;
+        --str-video__secondary-color: #669fff;
+        --str-video__text-color1: #ffffff;
+        --str-video__text-color2: #b4b7bb;
+        --str-video__text-color3: #72767e;
+        --str-video__text-color4: #f7f7f8;
+        --str-video__info-color: #4ce68c;
+        --str-video__info-color--accent: #20e070;
+        --str-video__danger-color: #ff3742;
+        --str-video__danger-color--accent: #ff000e;
+        --str-video__background-color0: #000000;
+        --str-video__background-color1: #1c1e22;
+        --str-video__background-color2: #0055ff;
+        --str-video__background-color3: #f4f4f5;
+        --str-video__background-color4: #121416;
+        --str-video__background-color5: #1d2938;
+        --str-video__background-color6: #b4b7bb;
+        --str-video__background-color7: #72767e;
+        --str-video__overlay-color: rgba(39, 42, 48, 0.75);
+        --str-video__livestream-overlay-color: rgba(39, 42, 48, 0.25);
+        --str-video__livestream-overlay-color-hovered: rgba(39, 42, 48, 0.5);
+      
+        --str-video__border-radius-xxs: 4px;
+        --str-video__border-radius-xs: 8px;
+        --str-video__border-radius-sm: 12px;
+        --str-video__border-radius-md: 18px;
+        --str-video__border-radius-lg: 24px;
+        --str-video__border-radius-xl: 30px;
+        --str-video__border-radius-xxl: 48px;
+        --str-video__border-radius-circle: 999px;
+      
+        --str-video__spacing-xxs: 4px;
+        --str-video__spacing-xs: 6px;
+        --str-video__spacing-sm: 8px;
+        --str-video__spacing-md: 12px;
+        --str-video__spacing-lg: 16px;
+        --str-video__spacing-xl: 20px;
+      
+        --str-video__font-size-xxs: 0.625rem;
+        --str-video__font-size-xs: 0.75rem;
+        --str-video__font-size-sm: 0.875rem;
+        --str-video__font-size-md: 1rem;
+        --str-video__font-size-lg: 1.125rem;
+        --str-video__font-size-xl: 1.25rem;
+        --str-video__font-size-xxl: 1.5rem;
     }
   .dark {
         --background: 0 0% 3.9%;
@@ -421,5 +466,4 @@
 .ProseMirror img {
   transition: all 0.1s ease-in-out;
 }
-
 

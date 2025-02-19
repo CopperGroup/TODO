@@ -22,12 +22,6 @@ export default function RootLayout({
       <html lang="en">
       <TeamPlanProvider>
         <body>
-          {/* <SignedOut>
-            <SignInButton />
-          </SignedOut>
-          <SignedIn>
-            <UserButton />
-          </SignedIn> */}
           <main>
             {children}
             <Toaster />
