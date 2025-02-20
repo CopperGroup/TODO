@@ -1,5 +1,7 @@
 "use client";
 
+import MeetingScheduler from "@/components/admin-components/Meetings/Sheduler/MeetingSheduler";
+import MeetingSchedulerViewer from "@/components/admin-components/Meetings/Sheduler/MeetingSheduler";
 import { Button } from "@/components/ui/button";
 import StreamVideoProvider from "@/providers/StreamClientProvider"
 import { useUser } from "@clerk/nextjs";
@@ -55,9 +57,9 @@ const Page = ({params }: { params: { id: string } }) => {
     }
 
     return (
-        <Button onClick={createMeeting}>
-            CreateCall
-        </Button>
+        <section className="w-full h-screen overflow-hidden">
+            <MeetingScheduler />
+        </section>
     )
 }
 

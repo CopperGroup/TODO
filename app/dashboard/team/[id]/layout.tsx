@@ -37,7 +37,7 @@ export default async function RootLayout({
       <section className="flex h-screen overflow-hidden">
           <SidebarProvider>
               <AdminSidebar teams={teams} user={user}/>
-              <main className="w-full flex-1 overflow-auto custom-scrollbar-blue">
+              <main className="w-full flex-1 overflow-auto no-scrollbar">
                 <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b px-4 bg-white">
                 <AdminBreadcrumb teams={teams} />
                 </header>

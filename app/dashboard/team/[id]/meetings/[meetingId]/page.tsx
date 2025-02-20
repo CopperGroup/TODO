@@ -1,7 +1,7 @@
 "use client";
 
-import MeetingRoom from '@/components/admin-components/Meetings/MeetingRoom';
-import MeetingSetup from '@/components/admin-components/Meetings/MeetingSetup';
+import MeetingRoom from '@/components/admin-components/Meetings/MeetingRoom/MeetingRoom';
+import MeetingSetup from '@/components/admin-components/Meetings/MeetingRoom/MeetingSetup';
 import { useGetCallById } from '@/hooks/useGetCallById';
 import { useUser } from '@clerk/nextjs';
 import { StreamCall, StreamTheme } from '@stream-io/video-react-sdk';

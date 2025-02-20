@@ -467,3 +467,12 @@
   transition: all 0.1s ease-in-out;
 }
 
+.str-video__video {
+  height: 100%;
+}
+
+.str-video__notification {
+  width: 100%;
+  right: 300px;
+  position: absolute;
+}
