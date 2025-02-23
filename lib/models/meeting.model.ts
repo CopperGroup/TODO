@@ -2,9 +2,12 @@ import mongoose from "mongoose";
 import { InferSchemaType } from "mongoose";
 
 const meetingSchema = new mongoose.Schema({
+    title: {
+        type: String,
+        required: [true, "Please provide a meeting title"],
+    },
     description: {
         type: String,
-        required: [true, "Please provide a meeting description"],
     },
     team: {
         type: mongoose.Schema.Types.ObjectId,
@@ -16,13 +19,21 @@ const meetingSchema = new mongoose.Schema({
         ref: 'User',
         required: [true, "Meeting must have a team"]
     },
-    sheduledTime: {
+    scheduledTime: {
         type: Date,
-        required: [true, "Meeting must have a sheduled time"]
+        required: [true, "Meeting must have a scheduled time"]
     },
     duration: {
-        type: Number
-    }
+        type: Number,
+        required: [true, "Meeting must have a duration"]
+    },
+    invitedParticipants: 
+    [   
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        }
+    ]
 }, {timestamps: true})
 
 type MeetingType = InferSchemaType<typeof meetingSchema> & { _id: string};

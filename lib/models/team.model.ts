@@ -55,7 +55,13 @@ const teamSchema = new mongoose.Schema({
   plan: {
     type: String,
     required: [true, "Team must have a billing plan"]
-  }
+  },
+  meetings: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Meeting"
+    }
+  ]
 });
 
 type TeamType = InferSchemaType<typeof teamSchema> & { 
@@ -67,6 +73,7 @@ type TeamType = InferSchemaType<typeof teamSchema> & {
     role: "Admin" | "Member"
   },
   requests?: string[],
+  meetings?: string[]
 };
 
 const Team = mongoose.models.Team || mongoose.model<TeamType>("Team", teamSchema);

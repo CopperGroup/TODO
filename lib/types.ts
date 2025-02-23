@@ -246,6 +246,7 @@ export type TeamTasks = {
 };
 
 import type { StreamVideoParticipant } from "@stream-io/video-react-sdk"
+import { MeetingType } from "./models/meeting.model";
 
 export type SortingFunction = (a: StreamVideoParticipant, b: StreamVideoParticipant) => number
 
@@ -253,3 +254,16 @@ export interface VideoGridProps {
   itemsPerPage?: number
   className?: string
 }
+
+
+export type TeamMeetingsType = Omit<TeamType, "meetings" | "members"> & {
+  meetings: (Omit<MeetingType, "author" | "invitedParticipants"> & {
+    author: UserType;
+    invitedParticipants: UserType[];
+  })[];
+  members: {
+    user: UserType,
+    role: "Admin" | "Member"
+  }[]
+};
+
