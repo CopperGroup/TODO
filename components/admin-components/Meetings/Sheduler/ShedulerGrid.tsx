@@ -19,23 +19,18 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { FaVideo } from "react-icons/fa"
 import { TeamMeetingsType } from "@/lib/types"
 import { cn } from "@/lib/utils"
+import MeetingModal from "./MeetingModal"
+import { useRouter } from "next/navigation"
 
-type Meeting = {
-  id: string
-  title: string
-  start: Date
-  duration: number
-  attendees?: Array<{
-    name: string
-    avatar?: string
-  }>
-}
+type Meeting = TeamMeetingsType["meetings"][number]
 
 type View = "Week" | "Day" | "Month" | "Next week"
+
 
 type ScheduleGridProps = {
   view: View
   meetings: TeamMeetingsType["meetings"]
+  onJoinMeeting: (meetingId: string) => void
 }
 
 const columnColors = [
@@ -48,15 +43,22 @@ const columnColors = [
   "border-indigo-800 bg-indigo-800/10 hover:bg-indigo-800/20",
 ]
 
-const ScheduleGrid: React.FC<ScheduleGridProps> = ({ view, meetings }) => {
+const ScheduleGrid: React.FC<ScheduleGridProps> = ({ view, meetings, onJoinMeeting }) => {
   const [columns, setColumns] = useState<Date[]>([])
   const [currentDate] = useState(new Date())
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>()
 
   useEffect(() => {
     setColumns(getColumnsForView(view, currentDate))
   }, [view, currentDate])
 
-  function getOccupiedHourSlots(meeting: TeamMeetingsType["meetings"][number]): Date[] {
+  const handleSelectMeeting = (meeting: Meeting) => {
+    setSelectedMeeting(meeting)
+    setIsModalOpen(true)
+  }
+
+  function getOccupiedHourSlots(meeting: Meeting): Date[] {
     const start = new Date(meeting.scheduledTime)
     const end = addMinutes(start, meeting.duration)
     const occupiedSlots: Date[] = []
@@ -107,6 +109,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ view, meetings }) => {
                   height: `${Math.max(24, height)}px`,
                   minHeight: "24px",
                 }}
+                onClick={() => handleSelectMeeting(meeting)}
               >
                 <div className="flex flex-col h-full">
                   <div className="flex items-center gap-1">
@@ -127,7 +130,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ view, meetings }) => {
                     <div className="flex -space-x-2 mt-1">
                       {meeting.invitedParticipants.map((attendee, i) => (
                         <Avatar key={i} className="w-5 h-5 border-2 border-neutral-800">
-                          <AvatarImage src={attendee.profilePicture} />
+                          <AvatarImage src={attendee.profilePicture || ""} />
                           <AvatarFallback>{attendee.name[0]}</AvatarFallback>
                         </Avatar>
                       ))}
@@ -153,7 +156,7 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ view, meetings }) => {
   }
 
   return (
-    <div className="flex flex-col h-full bg-neutral-900">
+    <div className="relative flex flex-col h-full bg-neutral-900">
       <div className="flex-1 overflow-x-auto custom-scrollbar">
         <div className="inline-flex">
           <div className="bg-neutral-900 pt-10">
@@ -191,6 +194,9 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ view, meetings }) => {
           </div>
         </div>
       </div>
+      {selectedMeeting && (
+        <MeetingModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} meeting={selectedMeeting} onJoinMeeting={onJoinMeeting}/>
+      )}
     </div>
   )
 }

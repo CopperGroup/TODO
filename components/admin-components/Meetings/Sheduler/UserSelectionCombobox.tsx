@@ -13,7 +13,8 @@ import {
   ComboboxEmpty,
 } from "@/components/ui/combobox"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import type { TeamMeetingsType, UserType } from "@/lib/types"
+import type { TeamMeetingsType } from "@/lib/types"
+import { UserType } from "@/lib/models/user.model"
 
 interface UserSelectionComboboxProps {
   team: TeamMeetingsType
@@ -35,19 +36,19 @@ const UserSelectionCombobox: React.FC<UserSelectionComboboxProps> = ({ team, ass
 
   return (
     <Combobox open={comboboxOpen} onOpenChange={setComboboxOpen}>
-      <ComboboxTrigger className="w-full bg-neutral-700 border-neutral-600 text-white placeholder-neutral-400 border p-2 hover:bg-neutral-600">
+      <ComboboxTrigger className="w-full bg-neutral-700 border-neutral-600 text-white placeholder-neutral-400 border p-2 hover:bg-neutral-600 hover:text-white">
         {assigneeInput || "Search for members..."}
       </ComboboxTrigger>
-      <ComboboxContent className="w-full p-0 bg-neutral-800 border-neutral-700">
+      <ComboboxContent className="w-full p-0">
         <ComboboxInput
           placeholder="Search for members..."
           value={assigneeInput}
           onValueChange={setAssigneeInput}
-          className="w-full border-b border-neutral-700 p-2 bg-neutral-800 text-white placeholder-neutral-400"
+          className="w-full p-2"
         />
         <ComboboxList className="max-h-[200px] overflow-y-auto">
           {filteredUsers.length === 0 && (
-            <ComboboxEmpty className="p-2 text-neutral-400">No members found.</ComboboxEmpty>
+            <ComboboxEmpty className="p-2">No members found.</ComboboxEmpty>
           )}
           {filteredUsers.map((member) => (
             <ComboboxItem
@@ -61,11 +62,11 @@ const UserSelectionCombobox: React.FC<UserSelectionComboboxProps> = ({ team, ass
               className="flex items-center p-2 hover:bg-neutral-700"
             >
               <Avatar className="w-6 h-6 mr-2">
-                <AvatarImage src={member.user.profilePicture} alt={member.user.name} />
+                <AvatarImage src={member.user.profilePicture || ""} alt={member.user.name} />
                 <AvatarFallback>{member.user.name.charAt(0)}</AvatarFallback>
               </Avatar>
-              <span className="font-medium text-white">{member.user.name}</span>
-              <span className="ml-auto text-xs text-neutral-400">{member.user.email}</span>
+              <span className="font-medium">{member.user.name}</span>
+              <span className="ml-auto text-xs text-gray-500">{member.user.email}</span>
             </ComboboxItem>
           ))}
         </ComboboxList>

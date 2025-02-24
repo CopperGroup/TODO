@@ -7,53 +7,28 @@ import { Plus } from "lucide-react"
 import ScheduleGrid from "./ShedulerGrid"
 import AddMeetingModal from "./AddMeetingModal"
 import { TeamMeetingsType } from "@/lib/types"
-
-type Meeting = {
-  id: string
-  title: string
-  start: Date
-  duration: number // in minutes
-  attendees?: Array<{
-    name: string
-    avatar?: string
-  }>
-}
-
-const mockMeetings: Meeting[] = [
-  {
-    id: "1",
-    title: "Design review",
-    start: new Date(2025, 1, 19, 9, 0),
-    duration: 40,
-  },
-  {
-    id: "2",
-    title: "UI Updates",
-    start: new Date(2025, 1, 19, 14, 0),
-    duration: 90,
-  },
-  {
-    id: "3",
-    title: "Wireframes Discussion",
-    start: new Date(2025, 1, 20, 11, 0),
-    duration: 30,
-  },
-  {
-    id: "4",
-    title: "Out of office",
-    start: new Date(2025, 1, 21, 14, 0),
-    duration: 300,
-  },
-]
+import { useRouter } from "next/navigation"
 
 const views = ["Week", "Next week", "Month"] as const
 type View = (typeof views)[number]
 
+type Meeting = TeamMeetingsType["meetings"][number]
+
 export default function MeetingScheduler({ stringifiedTeamWithMeetings }: { stringifiedTeamWithMeetings: string }) {
-  const team:TeamMeetingsType = JSON.parse(stringifiedTeamWithMeetings);
+  const team: TeamMeetingsType = JSON.parse(stringifiedTeamWithMeetings);
   const [currentView, setCurrentView] = useState<View>("Week")
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  const [meetings, setMeetings] = useState<TeamMeetingsType["meetings"]>(team.meetings || [])
+  const [meetings, setMeetings] = useState<Meeting[]>(team.meetings || [])
+  
+  const router = useRouter();
+
+  const handleAddMeeting = (meeting: Meeting) => {
+    setMeetings(prev => ([...prev, meeting]))
+  }
+
+  const handleJoinMeeting = (meetingId: string) => {
+    router.push(`/dashboard/team/${team._id}/meetings/${meetingId}`)
+  }
 
   return (
     <div className="w-full h-full bg-gray-900 text-white">
@@ -76,13 +51,13 @@ export default function MeetingScheduler({ stringifiedTeamWithMeetings }: { stri
           {views.map((view) => (
             <TabsContent key={view} value={view} className="h-full mt-0">
               <div className="h-full">
-                <ScheduleGrid view={view} meetings={meetings} />
+                <ScheduleGrid view={view} meetings={meetings} onJoinMeeting={handleJoinMeeting}/>
               </div>
             </TabsContent>
           ))}
         </Tabs>
       </div>
-      <AddMeetingModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} team={team}/>
+      <AddMeetingModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} team={team} onAdd={handleAddMeeting}/>
     </div>
   )
 }

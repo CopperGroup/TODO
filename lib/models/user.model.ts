@@ -16,6 +16,7 @@ const userSchema = new mongoose.Schema({
   },
   profilePicture: {
     type: String,
+    required: [true, "Please provide an profile picture"],
   },
   online: {
     type: Boolean,

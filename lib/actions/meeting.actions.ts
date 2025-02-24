@@ -7,7 +7,7 @@ import User from "../models/user.model";
 import { connectToDB } from "../mongoose";
 import { TeamMeetingsType } from "../types";
 
-export async function createMeeting({ title, description, teamId, clerkId, scheduledTime, duration, invitedParticipants }: { title: string, description: string | undefined, teamId: string, clerkId: string, scheduledTime: Date, duration: number, invitedParticipants?: string[]}): Promise<MeetingType>;
+export async function createMeeting({ title, description, teamId, clerkId, scheduledTime, duration, invitedParticipants }: { title: string, description: string | undefined, teamId: string, clerkId: string, scheduledTime: Date, duration: number, invitedParticipants?: string[]}): Promise<TeamMeetingsType["meetings"][number]>;
   
 export async function createMeeting({ title, description, teamId, clerkId, scheduledTime, duration, invitedParticipants }: { title: string, description: string | undefined, teamId: string, clerkId: string, scheduledTime: Date, duration: number, invitedParticipants?: string[]}, type: "json" ): Promise<string>;
 
@@ -43,10 +43,23 @@ export async function createMeeting( { title, description, teamId, clerkId, sche
     team.meetings.push(newMeeting[0]._id);
     await team.save({ session });
 
+    const meeting = await Meeting.findById(newMeeting[0]._id)
+    .populate([
+      {
+        path: "author",
+        model: User
+      },
+      {
+        path: "invitedParticipants",
+        model: User
+      }
+    ])
+
+    .session(session);
     await session.commitTransaction();
     session.endSession();
 
-    return type === "json" ? JSON.stringify(newMeeting[0]) : newMeeting[0];
+    return type === "json" ? JSON.stringify(meeting) : meeting;
   } catch (error: any) {
     await session.abortTransaction();
     session.endSession();

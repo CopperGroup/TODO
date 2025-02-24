@@ -12,7 +12,7 @@ import { useStreamVideoClient } from "@stream-io/video-react-sdk"
 import { useRouter } from "next/navigation"
 import { createMeeting } from "@/lib/actions/meeting.actions"
 import type { MeetingType } from "@/lib/models/meeting.model"
-import type { TeamMeetingsType, UserType } from "@/lib/types"
+import type { TeamMeetingsType } from "@/lib/types"
 import { Calendar } from "@/components/ui/calendar-black"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { CalendarIcon, Clock } from "lucide-react"
@@ -20,11 +20,17 @@ import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import UserSelectionCombobox from "./UserSelectionCombobox"
 import { TimeSelect, TimeSelectContent, TimeSelectTrigger } from "@/components/ui/time-select-black"
+import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { UserType } from "@/lib/models/user.model"
+
+type Meeting = TeamMeetingsType["meetings"][number];
 
 interface AddMeetingModalProps {
   isOpen: boolean
   onClose: () => void
-  team: TeamMeetingsType
+  team: TeamMeetingsType,
+  onAdd: (meeting: Meeting) => void
 }
 
 const durations = [
@@ -36,7 +42,7 @@ const durations = [
   { value: "180", label: "3 hrs" },
 ]
 
-export default function AddMeetingModal({ isOpen, onClose, team }: AddMeetingModalProps) {
+export default function AddMeetingModal({ isOpen, onClose, team, onAdd }: AddMeetingModalProps) {
   const [title, setTitle] = useState("")
   const [date, setDate] = useState<Date | undefined>(undefined)
   const [time, setTime] = useState("")
@@ -89,7 +95,7 @@ export default function AddMeetingModal({ isOpen, onClose, team }: AddMeetingMod
         "json",
       )
 
-      const newMeeting: MeetingType = JSON.parse(result)
+      const newMeeting: Meeting = JSON.parse(result)
 
       if (!newMeeting || !newMeeting._id) {
         throw new Error("Failed to retrieve meeting ID from backend")
@@ -110,8 +116,12 @@ export default function AddMeetingModal({ isOpen, onClose, team }: AddMeetingMod
         },
       })
 
-      router.push(`/dashboard/team/${team._id}/meetings/${call.id}`)
       onClose()
+      onAdd(newMeeting);
+      
+      if(isInstant) {
+        router.push(`/dashboard/team/${team._id}/meetings/${call.id}`)
+      }
     } catch (error) {
       console.error("Error creating meeting:", error)
     }
@@ -134,7 +144,16 @@ export default function AddMeetingModal({ isOpen, onClose, team }: AddMeetingMod
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-neutral-800 rounded-lg p-6 w-full max-w-md text-white border border-neutral-700">
-        <h2 className="text-2xl font-bold mb-4">Create New Meeting</h2>
+        <div className="w-full flex justify-between">
+          <h2 className="text-2xl font-bold mb-4">Schedule New Meeting</h2>
+          <Button
+              type="button"
+              onClick={(e) => createNewMeeting(e, true)}
+              className="bg-transparent text-blue-400 text-xs hover:bg-transparent hover:text-blue-500"
+            >
+              Instant?
+            </Button>
+        </div>
         <form onSubmit={(e) => createNewMeeting(e, false)}>
           <div className="space-y-4">
             <div>
@@ -220,16 +239,18 @@ export default function AddMeetingModal({ isOpen, onClose, team }: AddMeetingMod
               <UserSelectionCombobox team={team} assignees={invitedParticipants} onUserSelect={handleUserSelect} />
               <div className="mt-2 flex flex-wrap gap-2">
                 {invitedParticipants.map((participant) => (
-                  <div key={participant._id} className="flex items-center bg-neutral-700 rounded-full px-3 py-1">
-                    <span>{participant.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeInvitedParticipant(participant._id)}
-                      className="ml-2 text-neutral-400 hover:text-white"
-                    >
-                      ×
-                    </button>
-                  </div>
+                  <Badge
+                    key={participant._id}
+                    variant="secondary"
+                    className="flex items-center gap-2 bg-neutral-700 hover:bg-neutral-600 cursor-pointer"
+                    onClick={() => removeInvitedParticipant(participant._id)}
+                  >
+                    <Avatar className="w-5 h-5">
+                      <AvatarImage src={participant.profilePicture || ""} />
+                      <AvatarFallback>{participant.name[0]}</AvatarFallback>
+                    </Avatar>
+                    <span className="text-white">{participant.name}</span>
+                  </Badge>
                 ))}
               </div>
             </div>
@@ -243,15 +264,8 @@ export default function AddMeetingModal({ isOpen, onClose, team }: AddMeetingMod
             >
               Cancel
             </Button>
-            <Button
-              type="button"
-              onClick={(e) => createNewMeeting(e, true)}
-              className="coppergroup-gradient-text bg-white"
-            >
-              Instant Meeting
-            </Button>
             <Button type="submit" className="coppergroup-gradient text-white">
-              Create Meeting
+              Place meeting
             </Button>
           </div>
         </form>

@@ -258,11 +258,11 @@ export interface VideoGridProps {
 
 export type TeamMeetingsType = Omit<TeamType, "meetings" | "members"> & {
   meetings: (Omit<MeetingType, "author" | "invitedParticipants"> & {
-    author: UserType;
-    invitedParticipants: UserType[];
+    author: User;
+    invitedParticipants: User[];
   })[];
   members: {
-    user: UserType,
+    user: User,
     role: "Admin" | "Member"
   }[]
 };
