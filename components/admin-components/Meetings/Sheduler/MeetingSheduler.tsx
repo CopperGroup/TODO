@@ -3,11 +3,13 @@
 import { useState } from "react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
+import { Plus, Video } from "lucide-react"
 import ScheduleGrid from "./ShedulerGrid"
 import AddMeetingModal from "./AddMeetingModal"
 import { TeamMeetingsType } from "@/lib/types"
 import { useRouter } from "next/navigation"
+import { useGetLiveCalls } from "@/hooks/useGetLiveCalls"
+import LiveCallsModal from "./LiveCallsModal"
 
 const views = ["Week", "Next week", "Month"] as const
 type View = (typeof views)[number]
@@ -18,16 +20,19 @@ export default function MeetingScheduler({ stringifiedTeamWithMeetings }: { stri
   const team: TeamMeetingsType = JSON.parse(stringifiedTeamWithMeetings);
   const [currentView, setCurrentView] = useState<View>("Week")
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [isLiveMeetingsModalOpen, setIsLiveMeetingsModalOpen] = useState(false)
   const [meetings, setMeetings] = useState<Meeting[]>(team.meetings || [])
   
   const router = useRouter();
+  const { calls: liveMeetings } = useGetLiveCalls(team._id);
 
+  console.log(liveMeetings)
   const handleAddMeeting = (meeting: Meeting) => {
     setMeetings(prev => ([...prev, meeting]))
   }
 
   const handleJoinMeeting = (meetingId: string) => {
-    router.push(`/dashboard/team/${team._id}/meetings/${meetingId}`)
+    window.open(`/dashboard/team/${team._id}/meetings/${meetingId}`, "_blank");
   }
 
   return (
@@ -40,6 +45,14 @@ export default function MeetingScheduler({ stringifiedTeamWithMeetings }: { stri
                 {view}
               </TabsTrigger>
             ))}
+          <Button
+              onClick={() => setIsLiveMeetingsModalOpen(true)}
+              className="w-fit h-fit text-xs rounded-full border border-blue-600 bg-blue-700/50 text-white py-[5px] px-4 ml-2 hover:bg-blue-700/80" 
+              size="sm"
+            >
+              <Video className="h-3 w-3" />
+              {liveMeetings.length} live
+          </Button>
             <Button
               onClick={() => setIsAddModalOpen(true)}
               className="w-fit h-fit rounded-full coppergroup-gradient text-white ml-2 p-1.5"
@@ -58,6 +71,7 @@ export default function MeetingScheduler({ stringifiedTeamWithMeetings }: { stri
         </Tabs>
       </div>
       <AddMeetingModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} team={team} onAdd={handleAddMeeting}/>
+      <LiveCallsModal isOpen={isLiveMeetingsModalOpen} onClose={() => setIsLiveMeetingsModalOpen(false)} liveMeetings={meetings.filter(meeting => liveMeetings.map(m => m.id).includes(meeting._id))} onJoinCall={handleJoinMeeting}/>
     </div>
   )
 }

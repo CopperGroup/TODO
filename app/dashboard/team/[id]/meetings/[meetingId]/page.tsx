@@ -12,8 +12,6 @@ const Meeting  = ({ params }: { params: { meetingId: string } }) => {
     const { call, isCallLoading } = useGetCallById(params.meetingId)
     const { user, isLoaded } = useUser();
 
-    console.log(params.meetingId, call)
-
     if (!isLoaded || isCallLoading) return <h1>Loading</h1>;
 
     if (!call) return (

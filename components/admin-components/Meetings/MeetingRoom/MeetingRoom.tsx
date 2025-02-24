@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import {
   StreamTheme,
   ParticipantView,
@@ -13,6 +13,7 @@ import {
   createSoundDetector,
   SfuModels,
   useParticipantViewContext,
+  StreamVideoParticipant,
 } from "@stream-io/video-react-sdk"
 import { Card } from "@/components/ui/card"
 import { ChevronLeft, ChevronRight, LayoutGrid, Users, PhoneOff, PhoneIcon as PhoneX, Volume2 } from "lucide-react"
@@ -20,6 +21,7 @@ import { Button } from "@/components/ui/button"
 import { motion, AnimatePresence } from "framer-motion"
 import { ToggleAudio } from "./ToggleAudio"
 import { ToggleVideo } from "./ToggleVideo"
+import ParticipantList from "./ParticipantList"
 
 type LayoutType = "grid" | "speaker"
 
@@ -31,6 +33,7 @@ export default function VideoGrid() {
   const dominantSpeaker = useDominantSpeaker()
   const [page, setPage] = useState(0)
   const [layout, setLayout] = useState<LayoutType>("grid")
+  const [showParticipantList, setShowParticipantList] = useState(false)
   const itemsPerPage = layout === "grid" ? 9 : 5
 
   if (callingState !== CallingState.JOINED) {
@@ -134,6 +137,12 @@ export default function VideoGrid() {
               <ChevronRight size={24} />
             </Button>
           </div>
+
+          <ParticipantList
+            participants={participants}
+            currentParticipant={participants[0]}
+            isOpen={showParticipantList}
+          />
         </main>
 
         {/* Control panel */}
@@ -159,6 +168,11 @@ export default function VideoGrid() {
             <CallControls />
             <CallStatsButton />
             <ControlButton
+              onClick={() => setShowParticipantList(!showParticipantList)}
+              active={showParticipantList}
+              icon={<Users size={20} />}
+            />
+            <ControlButton
               onClick={handleLeaveCall}
               className="text-red-500 hover:text-red-600 hover:bg-red-500/10"
               icon={<PhoneOff size={20} />}
@@ -175,25 +189,46 @@ export default function VideoGrid() {
   )
 }
 
-const ParticipantTile = ({ participant, isSpeaker = false }: { participant: any; isSpeaker?: boolean }) => (
-  <motion.div
-    initial={{ scale: 0.9, opacity: 0 }}
-    animate={{ scale: 1, opacity: 1 }}
-    transition={{ type: "spring", stiffness: 260, damping: 20 }}
-    className={`relative aspect-video bg-gray-800 rounded-xl overflow-hidden shadow-lg ${
-      isSpeaker ? "ring-2 ring-blue-500 ring-offset-4 ring-offset-gray-900" : ""
-    }`}
-  >
-    <AudioVolumeIndicator participant={participant} />
-    <ParticipantView
-      participant={participant}
-      trackType="videoTrack"
-      VideoPlaceholder={CustomVideoPlaceholder}
-      ParticipantViewUI={CustomParticipantViewUI}
-      className="h-full"
-    />
-  </motion.div>
-)
+const ParticipantTile = ({ participant, isSpeaker = false }: { participant: StreamVideoParticipant, isSpeaker?: boolean }) => {
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const prevAudioLevel = useRef(participant.audioLevel);
+
+  useEffect(() => {
+    if (!participant.audioStream) return;
+
+    console.log(prevAudioLevel)
+    if (participant.audioLevel >= 0.02 && prevAudioLevel.current < 0.02) {
+      setIsSpeaking(true);
+    } else if (participant.audioLevel < 0.02 && prevAudioLevel.current >= 0.02) {
+      setIsSpeaking(false);
+    }
+    
+    prevAudioLevel.current = participant.audioLevel;
+  }, [participant.audioLevel]);
+
+  const ringClass = useMemo(() => {
+    if (isSpeaking && !isSpeaker) return "ring-1 ring-green-500 ring-offset-4";
+    if (isSpeaker) return "ring-2 ring-blue-500 ring-offset-4";
+    return "";
+  }, [isSpeaking, isSpeaker]);
+
+  return (
+    <motion.div
+      initial={{ scale: 0.9, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ type: "spring", stiffness: 260, damping: 20 }}
+      className={`relative aspect-video bg-gray-800 rounded-xl overflow-hidden shadow-lg ring-offset-gray-900 transition-all ${ringClass}`}
+    >
+      <ParticipantView
+        participant={participant}
+        trackType="videoTrack"
+        VideoPlaceholder={CustomVideoPlaceholder}
+        ParticipantViewUI={CustomParticipantViewUI}
+        className="h-full"
+      />
+    </motion.div>
+  );
+};
 
 const CustomVideoPlaceholder = ({ style }: { style: React.CSSProperties }) => {
   const context = useParticipantViewContext()
@@ -209,7 +244,7 @@ const CustomVideoPlaceholder = ({ style }: { style: React.CSSProperties }) => {
       {participant.image ? (
         <img
           src={participant.image || "/placeholder.svg"}
-          alt={participant.id}
+          alt={participant.name}
           className="w-24 h-24 rounded-full border-2 border-white/20"
         />
       ) : (
@@ -232,46 +267,6 @@ const CustomParticipantViewUI = () => {
       <div className="w-full flex justify-between items-center">
         <span className="font-medium">{participant.name || "Unknown"}</span>
       </div>
-    </div>
-  )
-}
-
-
-const AudioVolumeIndicator = ({ participant }: { participant: any }) => {
-  const { useMicrophoneState } = useCallStateHooks()
-  const { isEnabled } = useMicrophoneState()
-  const [audioLevel, setAudioLevel] = useState(0)
-
-  useEffect(() => {
-    if (!isEnabled || !participant.audioTrack) return
-
-    const disposeSoundDetector = createSoundDetector(
-      participant.audioTrack,
-      ({ audioLevel: al }) => setAudioLevel(al),
-      {
-        detectionFrequencyInMs: 80,
-        destroyStreamOnStop: false,
-      },
-    )
-
-    return () => {
-      disposeSoundDetector().catch(console.error)
-    }
-  }, [isEnabled, participant])
-
-  if (!isEnabled) return null
-
-  return (
-    <div className="absolute left-2 top-2 w-6 h-16 flex flex-col justify-end items-center gap-1 bg-black/40 rounded-full p-1 backdrop-blur-sm">
-      <div className="w-1 h-full bg-gray-600/30 flex items-end rounded-full overflow-hidden">
-        <motion.div
-          className="bg-blue-500 w-full rounded-full"
-          initial={{ height: "0%" }}
-          animate={{ height: `${audioLevel}%` }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        />
-      </div>
-      <Volume2 className="w-4 h-4 text-blue-400" />
     </div>
   )
 }

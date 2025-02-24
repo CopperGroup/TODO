@@ -178,11 +178,14 @@ const ScheduleGrid: React.FC<ScheduleGridProps> = ({ view, meetings, onJoinMeeti
                 className={cn(`bg-neutral-900 transition-colors`, columnColors[index % columnColors.length])}
               >
                 <div className="h-10 p-2 text-center">
-                  <div className="text-sm font-medium text-neutral-300">{format(date, "EEE")}</div>
-                  <div className={`text-sm ${isSameDay(date, new Date()) ? "coppergroup-gradient-text font-semibold" : "text-neutral-400"}`}>
-                    {format(date, "d")}
-                  </div>
+                  <p className="text-sm font-medium text-neutral-300">
+                    {format(date, "EEE") + " "}
+                    <span className={`text-sm ${isSameDay(date, new Date()) ? "coppergroup-gradient-text font-semibold" : "text-neutral-400"}`}>
+                      {format(date, "d")}
+                    </span>
+                  </p>
                 </div>
+                <p className={`text-xs text-gray-300 ml-3 ${meetings.filter((meeting) => isSameDay(new Date(meeting.scheduledTime), date)).length <= 0 ? "opacity-0" : ""}`}>{meetings.filter((meeting) => isSameDay(new Date(meeting.scheduledTime), date)).length} total</p>
                 <div className="mt-5">
                   {Array.from({ length: 24 }, (_, i) => {
                     const dayMeetings = meetings.filter((meeting) => isSameDay(new Date(meeting.scheduledTime), date))

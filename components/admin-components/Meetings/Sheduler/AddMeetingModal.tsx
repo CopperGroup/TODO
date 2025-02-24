@@ -112,6 +112,7 @@ export default function AddMeetingModal({ isOpen, onClose, team, onAdd }: AddMee
             title: isInstant ? "Instant Meeting" : title,
             description: isInstant ? "" : description,
             duration: Number.parseInt(duration),
+            teamId: team._id
           },
         },
       })
